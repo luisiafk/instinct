@@ -3,7 +3,7 @@ from tokens import TokenType, Token
 
 codigo_prueba = '''attack(10, 20, 5)
 if health < 20 and enemy_dist < 3: say("Cuidado")
-x= -7 % 2'''
+x= -7 % 2 goto'''
 
 
 print("---TOKENIZANDO---")
