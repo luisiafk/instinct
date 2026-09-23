@@ -25,6 +25,10 @@ class TokenType(Enum):
     GREATER = (r'>', False)
     LESS = (r'<', False)
 
+
+    IF = (r'\bif\b', True)
+    GOTO = (r'\bgoto\b', True)
+
     #LOGICA
     AND = (r'\band\b', True)
     OR = (r'\bor\b', True)
