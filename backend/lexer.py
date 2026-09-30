@@ -1,4 +1,5 @@
 import re
+from token import NEWLINE
 from tokens import TokenType, Token
 
 class LexerError(Exception):
@@ -28,6 +29,10 @@ class Lexer:
                 line += value.count('\n')
                 line_start = match.end()
                 continue
+
+            if kind == "COMMENT":
+                continue
+
 
             if kind == "MISMATCH":
                 raise LexerError(f"Caracter no permitido {value!r} en la line {line}, columna {column}")

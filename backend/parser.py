@@ -1,5 +1,3 @@
-from token import LESS
-
 from tokens import TokenType
 from ast_nodes import (
     ProgramNode, HeaderNode, LabelNode,
@@ -163,14 +161,11 @@ class Parser:
 
     def parse_equality(self):
         left = self.parse_additive()
-        print("Token actual", self.current)
-        print("Matchea con LESS", self.current.type == TokenType.LESS if self.current else False)
-
 
         while self.current and self.current.type in (
-            TokenType.EQUAL, TokenType.NOT_EQUAL,
+            TokenType.EQUAL, TokenType.NOTEQUAL,
             TokenType.LESS, TokenType.LESSEQUAL,
-            TokenType.GREATER, TokenType.GREATEREQUAL
+            TokenType.GREATER, TokenType.GREATEREQUAL,
         ):
             op_token = self.current
             self.advance()

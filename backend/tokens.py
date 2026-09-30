@@ -9,6 +9,15 @@ class TokenType(Enum):
     STRING = (r'"([^"\n]*)"', False)
     IDENTIFIER = (r'[a-zA-z_]\w*', False)
 
+    #COMPARACION
+    EQUAL = (r'==', False)
+    NOTEQUAL = (r'!=', False)
+    GREATEREQUAL = (r'>=', False)
+    LESSEQUAL = (r'<=', False)
+    GREATER = (r'>', False)
+    LESS = (r'<', False)
+
+
     #OPERADORES
     PLUS = (r'\+', False)
     MINUS = (r'-', False)
@@ -17,18 +26,11 @@ class TokenType(Enum):
     MODULO = (r'%', False)
     ASSIGN = (r'=', False)
 
-    #COMPARACION
-    EQUAL = (r'==', False)
-    NOT_EQUAL = (r'!=', False)
-    GREATEREQUAL = (r'>=', False)
-    LESSEQUAL = (r'<=', False)
-    GREATER = (r'>', False)
-    LESS = (r'<', False)
 
 
     IF = (r'\bif\b', True)
     GOTO = (r'\bgoto\b', True)
-
+    COMMENT = (r'#[^\n]*', False)
     #LOGICA
     AND = (r'\band\b', True)
     OR = (r'\bor\b', True)
