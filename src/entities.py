@@ -1,7 +1,12 @@
-class Terrain:
+class Entity:
+    def __init__(self, name: str, regen_rate: int=0):
+        self.name = name
+        self.regen_rate = regen_rate
+
+class Terrain(Entity):
     """Representa el terreno de una casilla """
     def __init__(self, name: str, walkable: bool = True, reserve: int = 100, regen_rate: int = 1):
-        self.name = name
+        super().__init__(name = name)
         self.walkable = walkable
         self.reserve = reserve
         self.regen_rate = regen_rate
@@ -10,10 +15,10 @@ class Terrain:
         return f"Terrain({self.name})"
 
 
-class GameObject:
+class GameObject(Entity):
     """Representa obstáculos o recursos en el mapa"""
-    def __init__(self, name: str, walkable: bool = False, reserve: int = 50, destructible: bool = True):
-        self.name = name
+    def __init__(self, name: str, walkable: bool = False, reserve: int = 50, destructible: bool = True, regen_rate: int=0):
+        super().__init__(name = name, regen_rate = regen_rate)
         self.walkable = walkable
         self.reserve = reserve
         self.destructible = destructible
@@ -22,9 +27,10 @@ class GameObject:
         return f"GameObject({self.name})"
 
 
-class Creature:
+class Creature(Entity):
     """Representa a un monstruo/criatura en ejecución"""
     def __init__(self, species_name: str, faction: str, health: int, vision: int, lifespan: int, x: int = 0, y: int = 0):
+        super().__init__(name = species_name)
         # Atributos
         self.species_name = species_name
         self.faction = faction
