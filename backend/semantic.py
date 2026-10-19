@@ -3,7 +3,8 @@ from re import I
 from ast_nodes import (
     ProgramNode, LabelNode, AssignNode,
     IfGotoNode, GotoNode, ActionNode, BinaryOpNode,
-    UnaryOpNode, NumberNode, StringNode, IdentifierNode
+    UnaryOpNode, NumberNode, StringNode, IdentifierNode,
+    FunctionCallNode
 )
 
 class SemanticError(Exception):
@@ -66,6 +67,13 @@ class SemanticAnalyzer:
         elif isinstance(expr, BinaryOpNode):
             self.visit_expr(expr.left)
             self.visit_expr(expr.right)
+
+        elif isinstance(expr, UnaryOpNode):
+            self.visit_expr(expr.operand)
+
+        elif isinstance(expr, FunctionCallNode):
+            for arg in expr.args:
+                self.visit_expr(arg)
 
         else:
             raise SemanticError(f"Expression not recognized: {type(expr).__name__}")
