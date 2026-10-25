@@ -82,10 +82,12 @@ def get_visible_entities(grid: WorldGrid, creature: Creature, vision_range: int)
     entities = []
 
     for tile in visible_tiles:
-        if tile.object_on_tile:
-            entities.append(tile.object_on_tile)
-        if tile.creature_on_tile:
-            entities.append(tile.creature_on_tile)
+        if tile.game_object:  # <-- Cambiado de object_on_tile a game_object
+            entities.append(tile.game_object)
+        if tile.creature:     # <-- Cambiado de creature_on_tile a creature
+            entities.append(tile.creature)
 
     return entities
+
+    
     

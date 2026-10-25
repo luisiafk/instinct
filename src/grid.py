@@ -18,6 +18,16 @@ class WorldGrid:
             return self.matrix[y][x]
         return None
 
+    def set_tile_terrain(self, x: int, y: int, terrain):
+        """Asigna un terreno a la casilla en (x, y)"""
+        if self.in_bounds(x, y):
+            self.matrix[y][x].terrain = terrain
+
+    def set_tile_object(self, x: int, y: int, game_object):
+        """Asigna un objeto a la casilla en (x, y)"""
+        if self.in_bounds(x, y):
+            self.matrix[y][x].game_object = game_object
+
     def is_walkable(self, x: int, y: int) -> bool:
         """Determina si una criatura puede dar un paso hacia la casilla (x, y)"""
         if not self.in_bounds(x, y):
