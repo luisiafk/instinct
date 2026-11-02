@@ -10,22 +10,22 @@ class Simulation:
     la ejecución de sus comportamientos y la aplicación de las leyes naturales del mundo.
     """
 
-    def init(self, world: WorldGrid, seed: int = None):
-        # Inicializar el mundo simulado a partir de la grilla proporcionada.
+    def __init__(self, world: WorldGrid, seed: int = None):
+        # Inicializar el mundo simulado a partir de la grilla proporcionada[span_4](start_span)[span_4](end_span).
         self.world = world
-        # Almacenar la lista global de criaturas activas en la simulación.
+        # Almacenar la lista global de criaturas activas en la simulación[span_5](start_span)[span_5](end_span).
         self.creatures = []
-        # Inicializar el contador de ticks en cero.
+        # Inicializar el contador de ticks en cero[span_6](start_span)[span_6](end_span).
         self.tick_count = 0
         
-        # Configurar la semilla de aleatoriedad si se especifica para asegurar reproducibilidad.
+        # Configurar la semilla de aleatoriedad si se especifica para asegurar reproducibilidad[span_7](start_span)[span_7](end_span).
         if seed is not None:
             random.seed(seed)
 
     def add_creature(self, creature: Creature, x: int, y: int) -> bool:
         """
         Colocar una criatura en una posición específica del mapa si la casilla está libre.
-        Retornar True si se colocó con éxito, o False en caso contrario.
+        Retornar True si se colocó con éxito, o False en caso contrario[span_8](start_span)[span_8](end_span).
         """
         tile = self.world.get_tile(x, y)
         if tile and tile.creature is None and tile.game_object is None:
@@ -38,14 +38,14 @@ class Simulation:
 
     def remove_dead_creatures(self):
         """
-        Eliminar del mapa y de la lista de activas a todas las criaturas que hayan muerto.
+        Eliminar del mapa y de la lista de activas a todas las criaturas que hayan muerto[span_9](start_span)[span_9](end_span).
         """
         surviving_creatures = []
         for creature in self.creatures:
             if creature.is_alive():
                 surviving_creatures.append(creature)
             else:
-                # Desocupar la casilla correspondiente en el grid del mundo.
+                # Desocupar la casilla correspondiente en el grid del mundo[span_10](start_span)[span_10](end_span).
                 tile = self.world.get_tile(creature.x, creature.y)
                 if tile and tile.creature == creature:
                     tile.creature = None
@@ -53,19 +53,19 @@ class Simulation:
 
     def update_environment_resources(self):
         """
-        Aplicar la regeneración natural de los terrenos y la desaparición de objetos agotados al final del tick.
+        Aplicar la regeneración natural de los terrenos y la desaparición de objetos agotados al final del tick[span_11](start_span)[span_11](end_span).
         """
         for y in range(self.world.height):
             for x in range(self.world.width):
                 tile = self.world.get_tile(x, y)
                 if tile:
-                    # Regenerar el terreno según su tasa establecida sin superar su valor máximo.
+                    # Regenerar el terreno según su tasa establecida sin superar su valor máximo[span_12](start_span)[span_12](end_span).
                     if tile.terrain:
                         max_res = getattr(tile.terrain, 'resource_max', 100)
                         regen = getattr(tile.terrain, 'regen_rate', 0)
                         tile.terrain.reserve = min(max_res, tile.terrain.reserve + regen)
                     
-                    # Eliminar objetos cuya reserva haya llegado a cero o menos.
+                    # Eliminar objetos cuya reserva haya llegado a cero o menos[span_13](start_span)[span_13](end_span).
                     if tile.game_object and tile.game_object.reserve <= 0:
                         tile.game_object = None
 
@@ -74,24 +74,25 @@ class Simulation:
         Aplicar las leyes naturales al final de cada tick a todas las criaturas vivas:
         perder 1 punto de vida, aumentar 1 tick de edad y comprobar condiciones de muerte.
         """
-        for creature in self.creatures:
+        # Iteramos sobre una copia de la lista para evitar alterar el iterador en pleno ciclo
+        for creature in list(self.creatures):
             if creature.is_alive():
-                # Reducir un punto de vida y sumar uno a la edad de forma obligatoria por turno.
+                # Reducir un punto de vida y sumar uno a la edad de forma obligatoria por turno
                 creature.health -= 1
                 creature.age = max(0, creature.age + 1)
-                
-                # Comprobar si la criatura muere por falta de salud o por alcanzar su esperanza de vida.
+                                            
+                # Comprobar si la criatura muere por falta de salud o por alcanzar su esperanza de vida
                 if creature.health <= 0 or creature.age >= creature.lifespan:
                     creature.alive = False
 
-        # Limpiar del mundo a las criaturas que hayan perecido por causas naturales.
+        # Limpiar del mundo a las criaturas que hayan perecido una vez finalizada la revisión
         self.remove_dead_creatures()
 
     def update_creature_perceptions(self, creature: Creature):
         """
-        Actualizar las variables de solo lectura en la memoria de la criatura al comenzar su turno.
+        Actualizar las variables de solo lectura en la memoria de la criatura al comenzar su turno[span_18](start_span)[span_18](end_span).
         """
-        # Actualizar percepciones básicas sobre sí misma.
+        # Actualizar percepciones básicas sobre sí misma[span_19](start_span)[span_19](end_span).
         creature.memory["health"] = creature.health
         creature.memory["age"] = creature.age
         creature.memory["lifespan"] = creature.lifespan
@@ -101,7 +102,7 @@ class Simulation:
         creature.memory["x"] = creature.x
         creature.memory["y"] = creature.y
         
-        # Consultar el terreno bajo los pies de la criatura.
+        # Consultar el terreno bajo los pies de la criatura[span_20](start_span)[span_20](end_span).
         current_tile = self.world.get_tile(creature.x, creature.y)
         if current_tile and current_tile.terrain:
             creature.memory["terrain_here"] = current_tile.terrain.name
@@ -110,12 +111,12 @@ class Simulation:
             creature.memory["terrain_here"] = ""
             creature.memory["reserve_here"] = 0
 
-        # Actualizar percepciones globales del mundo.
+        # Actualizar percepciones globales del mundo[span_21](start_span)[span_21](end_span).
         creature.memory["width"] = self.world.width
         creature.memory["height"] = self.world.height
         creature.memory["tick"] = self.tick_count
         
-        # Calcular totales de criaturas, aliados y enemigos en todo el mapa (excluyéndose a sí misma).
+        # Calcular totales de criaturas, aliados y enemigos en todo el mapa (excluyéndose a sí misma)[span_22](start_span)[span_22](end_span).
         total_c = len(self.creatures) - 1
         total_a = 0
         total_e = 0
@@ -129,47 +130,150 @@ class Simulation:
         creature.memory["total_allies"] = total_a
         creature.memory["total_enemies"] = total_e
 
-        # Proveer la fuente de aleatoriedad del lenguaje (entero entre 0 y 99).
+        # Proveer la fuente de aleatoriedad del lenguaje (entero entre 0 y 99)[span_23](start_span)[span_23](end_span).
         creature.memory["random"] = random.randint(0, 99)
 
-    def run_creature_turn(self, creature: Creature):
+    def run_creature_turn(self, creature: Creature, program_ast):
         """
-        Ejecutar el turno de una criatura individual, procesando sus instrucciones 
-        hasta que realice una acción que consuma turno o alcance el límite de líneas.
+        Ejecutar el turno de una criatura individual, interpretando su AST
+        a partir de su instruction_pointer actual y procesando las instrucciones.
         """
-        # Verificar si la criatura se encuentra en estado de espera (dormida por un wait previo).
         if hasattr(creature, "sleep_turns") and creature.sleep_turns > 0:
             creature.sleep_turns -= 1
             return
 
-        # Actualizar las percepciones obligatorias al inicio del turno.
+        # Actualizar las percepciones obligatorias al inicio del turno[span_24](start_span)[span_24](end_span).
         self.update_creature_perceptions(creature)
 
-        # Ejecutar instrucciones del script de forma iterativa (respetando el límite de 100 líneas por turno).
+        statements = program_ast.statements
+        
+        # Encontrar el índice de inicio basado en el instruction_pointer de la criatura (ej. "start")[span_25](start_span)[span_25](end_span)[span_26](start_span)[span_26](end_span)
+        ip = 0
+        if isinstance(creature.instruction_pointer, str):
+            for idx, stmt in enumerate(statements):
+                if hasattr(stmt, "name") and stmt.name == creature.instruction_pointer:
+                    ip = idx
+                    break
+        elif isinstance(creature.instruction_pointer, int):
+            ip = creature.instruction_pointer
+
         lines_executed = 0
         turn_consumed = False
 
-        while lines_executed < 100 and not turn_consumed and creature.is_alive():
-            lines_executed += 1
-            
-            # Nota de integración: Aquí se conecta con el intérprete del compañero
-            # para obtener la instrucción actual a partir del instruction_pointer de la criatura.
-            # Si el script ejecuta una acción que retorna True (move, attack, consume, reproduce, roar, wait),
-            # se marca el turno como consumido. Si ejecuta say, retorna False y continúa evaluando.
-            
-            break
 
-    def run_tick(self):
+        while lines_executed < 100 and not turn_consumed and creature.is_alive() and ip < len(statements):
+            lines_executed += 1
+            stmt = statements[ip]
+
+            node_type = stmt.__class__.__name__
+
+            # 1. Etiquetas (LabelNode): solo avanzamos el puntero[span_27](start_span)[span_27](end_span)
+            if node_type == "LabelNode":
+                ip += 1
+                continue
+
+            # 2. Salto incondicional (GotoNode)[span_28](start_span)[span_28](end_span)
+            elif node_type == "GotoNode":
+                target_label = stmt.target
+                found = False
+                for idx, s in enumerate(statements):
+                    if hasattr(s, "name") and s.name == target_label:
+                        ip = idx
+                        found = True
+                        break
+                if not found:
+                    break
+                continue
+
+            # 3. Salto condicional (IfGotoNode)[span_29](start_span)[span_29](end_span)
+            elif node_type == "IfGotoNode":
+                condition_val = stmt.condition.evaluate(creature.memory)
+                if condition_val:
+                    target_label = stmt.target
+                    found = False
+                    for idx, s in enumerate(statements):
+                        if hasattr(s, "name") and s.name == target_label:
+                            ip = idx
+                            found = True
+                            break
+                    if not found:
+                        break
+                    continue
+                else:
+                    ip += 1
+                    continue
+
+            # 4. Asignación (AssignNode)[span_30](start_span)[span_30](end_span)
+            elif node_type == "AssignNode":
+                val = stmt.value.evaluate(creature.memory)
+                creature.memory[stmt.name] = val
+                ip += 1
+                continue
+
+            # 5. Ejecución de Acción (ActionNode)[span_31](start_span)[span_31](end_span)[span_32](start_span)[span_32](end_span)
+            elif node_type == "ActionNode":
+                action_name = stmt.name.upper()
+                action_obj = None
+                
+                if action_name == "MOVE" and len(stmt.args) >= 3:
+                    from actions import Move
+                    action_obj = Move()
+                    action_obj.init(stmt.args[0], stmt.args[1], stmt.args[2])
+                elif action_name == "ATTACK" and len(stmt.args) >= 3:
+                    from actions import Attack
+                    action_obj = Attack()
+                    action_obj.init(stmt.args[0], stmt.args[1], stmt.args[2])
+                elif action_name == "CONSUME" and len(stmt.args) >= 4:
+                    from actions import Consume
+                    action_obj = Consume()
+                    action_obj.init(stmt.args[0], stmt.args[1], stmt.args[2], stmt.args[3])
+                elif action_name == "WAIT" and len(stmt.args) >= 1:
+                    from actions import Wait
+                    action_obj = Wait()
+                    action_obj.init(stmt.args[0])
+                elif action_name == "SAY" and len(stmt.args) >= 1:
+                    from actions import Say
+                    action_obj = Say()
+                    action_obj.init(stmt.args[0])
+                elif action_name == "REPRODUCE" and len(stmt.args) >= 3:
+                    from actions import Reproduce
+                    action_obj = Reproduce()
+                    action_obj.init(stmt.args[0], stmt.args[1], stmt.args[2])
+                elif action_name == "ROAR" and len(stmt.args) >= 1:
+                    from actions import Roar
+                    action_obj = Roar()
+                    action_obj.init(stmt.args[0])
+
+                if action_obj:
+                    # Ejecuta la acción y devuelve True si consume turno, o False si continúa (ej. say)[span_33](start_span)[span_33](end_span)
+                    turn_consumed = action_obj.execute(creature, self.world)
+                
+                ip += 1
+                
+            else:
+                ip += 1
+
+        # Guardar el puntero para el siguiente turno[span_34](start_span)[span_34](end_span)
+        creature.instruction_pointer = ip
+
+    def run_tick(self, programs_dict=None):
         """
         Avanzar la simulación un turno completo (tick), ordenando aleatoriamente a las criaturas,
-        ejecutando sus turnos y aplicando posteriormente las leyes naturales y la regeneración del entorno.
+        ejecutando sus turnos y aplicando posteriormente las leyes naturales y la regeneración del entorno[span_35](start_span)[span_35](end_span).
         """
-        # Incrementar el contador global de ticks de la simulación.
         self.tick_count += 1
-
-        # Limpiar criaturas muertas antes de iniciar el nuevo turno.
         self.remove_dead_creatures()
 
-        # Crear una copia de la lista de criaturas vivas y sortear su orden al azar en cada tick.
         active_creatures = list(self.creatures)
         random.shuffle(active_creatures)
+
+        # Ejecutar el turno de cada criatura activa utilizando su respectivo programa AST cargado
+        if programs_dict:
+            for creature in active_creatures:
+                prog = programs_dict.get(creature.species_name)
+                if prog:
+                    self.run_creature_turn(creature, prog)
+
+        # Aplicar leyes naturales y regeneración al final del tick[span_36](start_span)[span_36](end_span)
+        self.apply_natural_laws()
+        self.update_environment_resources()

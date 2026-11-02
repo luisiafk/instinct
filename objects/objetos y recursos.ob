@@ -1,0 +1,19 @@
+# Estructura de campos por línea (separados por '|'):
+#   1. ID_OBJETO       : Identificador único técnico
+#   2. NOMBRE          : Nombre descriptivo para la interfaz y logs
+#   3. SIMBOLO         : Carácter representativo en mapas o inventario
+#   4. TIPO_EFECTO     : Acción o categoría (heal, energy, boost, damage, resource)
+#   5. VALOR           : Magnitud numérica del efecto
+#   6. ES_CONSUMIBLE   : 1 si desaparece al usarse, 0 si es permanente/estático
+# ---------------------------------------------------------------------
+
+# --- Recursos de Supervivencia y Salud ---
+HEALTH_PACK   | Botiquín Orgánico   | H | heal   | 30  | 1
+ENERGY_NODE   | Núcleo de Maná      | E | energy | 50  | 1
+
+# --- Potenciadores de Combate y Estado ---
+SHIELD_SHARD  | Fragmento Blindado  | S | boost  | 20  | 1
+VENOM_TRAP    | Espora Tóxica       | X | damage | 15  | 1
+
+# --- Recursos de Bioma / Materia Prima ---
+BIOMASS_RES   | Biomasa Natural     | B | resource| 25 | 1
