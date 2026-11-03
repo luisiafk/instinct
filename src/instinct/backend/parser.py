@@ -1,5 +1,5 @@
-from tokens import TokenType
-from ast_nodes import (
+from .tokens import TokenType
+from .ast_nodes import (
     ProgramNode, HeaderNode, LabelNode,
     GotoNode, IfGotoNode, AssignNode,
     ActionNode, NumberNode, StringNode,

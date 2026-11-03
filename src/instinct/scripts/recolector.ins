@@ -1,0 +1,18 @@
+creature Recolector
+faction azules
+health 80
+vision 5
+lifespan 400
+
+start:
+    if enemy_dist >= 0 goto flee
+    if reserve_here > 0 and health < 80 goto gather
+    wait(1)
+    goto start
+flee:
+    say("peligro")
+    move(-enemy_dx, enemy_dy, 2)
+    goto start
+gather:
+    consume(0, 0, 10, 15)
+    goto start

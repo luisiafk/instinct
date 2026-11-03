@@ -5,7 +5,7 @@ from entities import Creature, Tile
 
 class Simulation:
     """
-    Clase encargada de controlar el motor principal de la simulación, 
+    Clase encargada de controlar el motor principal de la simulación,
     gestionando el avance por turnos (ticks), el orden aleatorio de las criaturas,
     la ejecución de sus comportamientos y la aplicación de las leyes naturales del mundo.
     """
@@ -17,7 +17,7 @@ class Simulation:
         self.creatures = []
         # Inicializar el contador de ticks en cero[span_6](start_span)[span_6](end_span).
         self.tick_count = 0
-        
+
         # Configurar la semilla de aleatoriedad si se especifica para asegurar reproducibilidad[span_7](start_span)[span_7](end_span).
         if seed is not None:
             random.seed(seed)
@@ -64,7 +64,7 @@ class Simulation:
                         max_res = getattr(tile.terrain, 'resource_max', 100)
                         regen = getattr(tile.terrain, 'regen_rate', 0)
                         tile.terrain.reserve = min(max_res, tile.terrain.reserve + regen)
-                    
+
                     # Eliminar objetos cuya reserva haya llegado a cero o menos[span_13](start_span)[span_13](end_span).
                     if tile.game_object and tile.game_object.reserve <= 0:
                         tile.game_object = None
@@ -80,7 +80,7 @@ class Simulation:
                 # Reducir un punto de vida y sumar uno a la edad de forma obligatoria por turno
                 creature.health -= 1
                 creature.age = max(0, creature.age + 1)
-                                            
+
                 # Comprobar si la criatura muere por falta de salud o por alcanzar su esperanza de vida
                 if creature.health <= 0 or creature.age >= creature.lifespan:
                     creature.alive = False
@@ -101,7 +101,29 @@ class Simulation:
         creature.memory["faction"] = creature.faction
         creature.memory["x"] = creature.x
         creature.memory["y"] = creature.y
-        
+
+        min_dist = 9999
+        closest_enemy = None
+
+        for c in self.creatures:
+            if c != creature and c.faction != creature.faction and c.is_alive():
+                dist = abs(c.x - creature.x) + abs(c.y - creature.y)
+                if dist <= creature.vision and dist < min_dist:
+                    min_dist = dist
+                    closest_enemy = c
+
+        if closest_enemy:
+            creature.memory["enemy_dist"] = min_dist
+            creature.memory["enemy_dx"] = closest_enemy.x - creature.x
+            creature.memory["enemy_dy"] = closest_enemy.y - creature.y
+        else:
+            creature.memory["enemy_dist"] = 0
+            creature.memory["enemy_dx"] = 0
+            creature.memory["enemy_dy"] = 0
+
+
+
+
         # Consultar el terreno bajo los pies de la criatura[span_20](start_span)[span_20](end_span).
         current_tile = self.world.get_tile(creature.x, creature.y)
         if current_tile and current_tile.terrain:
@@ -115,7 +137,7 @@ class Simulation:
         creature.memory["width"] = self.world.width
         creature.memory["height"] = self.world.height
         creature.memory["tick"] = self.tick_count
-        
+
         # Calcular totales de criaturas, aliados y enemigos en todo el mapa (excluyéndose a sí misma)[span_22](start_span)[span_22](end_span).
         total_c = len(self.creatures) - 1
         total_a = 0
@@ -130,7 +152,7 @@ class Simulation:
         creature.memory["total_allies"] = total_a
         creature.memory["total_enemies"] = total_e
 
-        # Proveer la fuente de aleatoriedad del lenguaje (entero entre 0 y 99)[span_23](start_span)[span_23](end_span).
+        # Proveer la fuente de aleatoriedad del lenguaje (entero entre 0 y 99).
         creature.memory["random"] = random.randint(0, 99)
 
     def run_creature_turn(self, creature: Creature, program_ast):
@@ -142,12 +164,16 @@ class Simulation:
             creature.sleep_turns -= 1
             return
 
-        # Actualizar las percepciones obligatorias al inicio del turno[span_24](start_span)[span_24](end_span).
+        # Actualizar las percepciones obligatorias al inicio del turno.
         self.update_creature_perceptions(creature)
 
-        statements = program_ast.statements
-        
-        # Encontrar el índice de inicio basado en el instruction_pointer de la criatura (ej. "start")[span_25](start_span)[span_25](end_span)[span_26](start_span)[span_26](end_span)
+        if isinstance(program_ast, list):
+            statements = program_ast
+        else:
+            statements = getattr(program_ast, 'statements', [])
+
+
+        # Encontrar el índice de inicio basado en el instruction_pointer de la criatura (ej. "start")
         ip = 0
         if isinstance(creature.instruction_pointer, str):
             for idx, stmt in enumerate(statements):
@@ -167,12 +193,17 @@ class Simulation:
 
             node_type = stmt.__class__.__name__
 
-            # 1. Etiquetas (LabelNode): solo avanzamos el puntero[span_27](start_span)[span_27](end_span)
+            print(
+                f"[DEBUG] T{self.tick_count} | {creature.species_name} (pos: {creature.x}, {creature.y}), hp: {creature.health} "
+                f"| Ip: {ip} -> Ejecutando {node_type}: stmt: {stmt}"
+            )
+
+            # 1. Etiquetas (LabelNode): solo avanzamos el puntero
             if node_type == "LabelNode":
                 ip += 1
                 continue
 
-            # 2. Salto incondicional (GotoNode)[span_28](start_span)[span_28](end_span)
+            # 2. Salto incondicional (GotoNode)
             elif node_type == "GotoNode":
                 target_label = stmt.target
                 found = False
@@ -185,7 +216,7 @@ class Simulation:
                     break
                 continue
 
-            # 3. Salto condicional (IfGotoNode)[span_29](start_span)[span_29](end_span)
+            # 3. Salto condicional (IfGotoNode)
             elif node_type == "IfGotoNode":
                 condition_val = stmt.condition.evaluate(creature.memory)
                 if condition_val:
@@ -203,18 +234,18 @@ class Simulation:
                     ip += 1
                     continue
 
-            # 4. Asignación (AssignNode)[span_30](start_span)[span_30](end_span)
+            # 4. Asignación (AssignNode)
             elif node_type == "AssignNode":
                 val = stmt.value.evaluate(creature.memory)
                 creature.memory[stmt.name] = val
                 ip += 1
                 continue
 
-            # 5. Ejecución de Acción (ActionNode)[span_31](start_span)[span_31](end_span)[span_32](start_span)[span_32](end_span)
+            # 5. Ejecución de Acción (ActionNode)
             elif node_type == "ActionNode":
                 action_name = stmt.name.upper()
                 action_obj = None
-                
+
                 if action_name == "MOVE" and len(stmt.args) >= 3:
                     from actions import Move
                     action_obj = Move()
@@ -247,9 +278,9 @@ class Simulation:
                 if action_obj:
                     # Ejecuta la acción y devuelve True si consume turno, o False si continúa (ej. say)[span_33](start_span)[span_33](end_span)
                     turn_consumed = action_obj.execute(creature, self.world)
-                
+
                 ip += 1
-                
+
             else:
                 ip += 1
 
@@ -263,6 +294,14 @@ class Simulation:
         """
         self.tick_count += 1
         self.remove_dead_creatures()
+
+        existing_creatures = set(self.creatures)
+        for y in range(self.world.height):
+            for x in range(self.world.width):
+                tile = self.world.get_tile(x, y)
+                if tile and tile.creature and tile.creature not in existing_creatures:
+                    self.creatures.append(tile.creature)
+                    existing_creatures.add(tile.creature)
 
         active_creatures = list(self.creatures)
         random.shuffle(active_creatures)

@@ -1,6 +1,6 @@
-from lexer import Lexer
-from parser import Parser
-from semantic import SemanticAnalyzer, SemanticError
+from backend.lexer import Lexer
+from backend.parser import Parser
+from backend.semantic import SemanticAnalyzer, SemanticError
 
 def run_test(title, code_str):
     print(f"\n----- Pruebas: {title} ----")
