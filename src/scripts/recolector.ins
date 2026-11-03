@@ -1,0 +1,51 @@
+
+# Script Instinct (.ins): Recolector / Explorador Pacífico
+# Prioriza la recolección de recursos y la evasión de amenazas
+
+
+start:
+    # 1. Si ve a un enemigo muy cerca, prioriza huir o esperar de forma prudente
+    if-goto fase_defensa total_enemies > 0
+
+    # 2. Si la reserva del terreno actual tiene recursos (> 20), consume/recolecta
+    assign recursos_suelo reserve_here
+    if-goto recolectar_recursos recursos_suelo > 20
+
+    # 3. Comportamiento por defecto: Patrullaje y búsqueda aleatoria de recursos
+    assign decision random
+    if-goto mover_arriba decision < 25
+    if-goto mover_derecha decision < 50
+    if-goto mover_abajo decision < 75
+    goto mover_izquierda
+
+# --- Bloque de Movimiento ---
+mover_arriba:
+    move 0 -1 1
+    goto start
+
+mover_derecha:
+    move 1 0 1
+    goto start
+
+mover_abajo:
+    move 0 1 1
+    goto start
+
+mover_izquierda:
+    move -1 0 1
+    goto start
+
+# --- Fase de Recolección ---
+recolectar_recursos:
+    roar "¡Encontré una zona rica en recursos! Recolectando..."
+    # Consume los recursos del terreno para restaurar salud o energía
+    consume TERRAIN_RESOURCE 15 0
+    wait 1
+    goto start
+
+# --- Fase de Defensa / Evasión ---
+fase_defensa:
+    roar "¡Peligro detectado! Alejándome de la zona..."
+    # En lugar de atacar, da un paso atrás o espera para ponerse a salvo
+    wait 1
+    goto start

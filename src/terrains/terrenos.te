@@ -1,0 +1,18 @@
+// Formato de columnas:
+//   simbolo | costo_movimiento | es_obstaculo (0/1) | modificador_salud
+// ---------------------------------------------------------------------
+
+// Suelo estándar transitable
+. : 1 : 0 : 0
+
+// Obstáculos infranqueables (Muros / Rocas)
+# : 999 : 1 : 0
+
+// Zonas de recursos o biomas especiales
+T : 1 : 0 : 10
+
+// Terrenos pantanosos o de alto costo de movimiento
+W : 3 : 0 : 0
+
+// Zonas de daño por turno (Lava / Fuego activo)
+L : 2 : 0 : -15
