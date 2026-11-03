@@ -44,7 +44,7 @@ def load_terrains(filepath: str) -> dict:
             else:
                 terrains[clean_line] = Terrain(name=clean_line)
                 
-    # Asegurar un terreno por defecto '.' (ground)
+    # Asegurar un terreno por defecto 
     if '.' not in terrains and 'ground' not in terrains:
         terrains['.'] = Terrain(name="ground", walkable=True, regen_rate=1)
             
