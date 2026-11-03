@@ -1,5 +1,3 @@
-from re import I
-
 from ast_nodes import (
     ProgramNode, LabelNode, AssignNode,
     IfGotoNode, GotoNode, ActionNode, BinaryOpNode,
