@@ -15,7 +15,7 @@ class Terrain(Entity):
         self.health_modifier = health_modifier  # Daño o curacion al pisarlo 
         self.movement_cost = movement_cost      # Costo de movimiento
 
-    def repr(self):
+    def __repr__(self):
         return f"Terrain({self.name})"
 
 
@@ -29,7 +29,7 @@ class GameObject(Entity):
         self.regen_rate = regen_rate 
         self.destructible = destructible
 
-    def repr(self):
+    def __repr__(self):
         return f"GameObject({self.name})"
 
 
@@ -57,13 +57,19 @@ class Creature(Entity):
         # Puntero de instrucciones
         self.instruction_pointer = "start"
 
+        # Aqui guardamos los turnos que la criatura debe esperar
+        self.sleep_turns = 0
+
+        # Aqui guardamos la simulacion a la que pertenece
+        self.simulation = None
+
     def is_alive(self) -> bool:
         """Una criatura muere si su vida llega a 0 o supera su esperanza de vida"""
         if self.health <= 0 or self.age >= self.lifespan:
             self.alive = False
         return self.alive
 
-    def repr(self):
+    def __repr__(self):
         return f"Creature({self.species_name}, Faction:{self.faction}, HP:{self.health}, Pos:({self.x},{self.y}))"
 
 

@@ -23,6 +23,16 @@ class TacticalVisualizer:
         self.COLOR_HP_HIGH = (46, 139, 87)   # Verde salud óptima
         self.COLOR_HP_MID = (205, 133, 63)   # Ámbar salud media
         self.COLOR_HP_LOW = (178, 34, 34)    # Rojo crítico
+       
+        # Colores para diferenciar los tipos de casillas
+        self.COLOR_GROUND = (35, 43, 34)
+        self.COLOR_WALL = (85, 79, 72)
+        self.COLOR_HEALING = (45, 85, 55)
+        self.COLOR_DANGER = (125, 48, 35)
+        self.COLOR_SLOW = (85, 75, 45)
+        self.COLOR_OBJECT = (105, 80, 45)
+        self.COLOR_BORDER = (210, 160, 75)
+
         
         # Tipografías seguras con respaldo y soporte de emojis nativos
         try:
@@ -84,7 +94,19 @@ class TacticalVisualizer:
 
         # Cabecera del HUD
         title_surf = self.font_title.render(f"⚔️ BIOMA: {level_name.upper()}", True, self.COLOR_ACCENT)
-        tick_surf = self.font_body.render(f"TICK: [ {tick:02d} / {total_ticks:02d} ]", True, self.COLOR_TEXT)
+        
+        # Mostramos el tick actual sin imponer un limite
+        if total_ticks is None:
+            tick_text = f"TICK: [ {tick:04d} ]"
+        else:
+            tick_text = f"TICK: [ {tick:02d} / {total_ticks:02d} ]"
+
+        tick_surf = self.font_body.render(
+            tick_text,
+            True,
+            self.COLOR_TEXT
+        )
+        
         status_text = "ESTADO: PAUSADO [ESPACIO]" if self.paused else f"ESTADO: ACTIVO ({self.fps} FPS)"
         status_surf = self.font_small.render(status_text, True, (200, 150, 80) if self.paused else (100, 180, 100))
         
@@ -141,17 +163,101 @@ class TacticalVisualizer:
         map_origin_x = (map_area_width - (world_w * cell_size)) // 2
         map_origin_y = (self.height - (world_h * cell_size)) // 2
         
-        # Dibujar cuadrícula y elementos del terreno/objetos
+       # Dibujamos cada casilla segun el terreno y los objetos que contiene
         for x in range(world_w):
             for y in range(world_h):
-                rect = pygame.Rect(map_origin_x + x * cell_size, map_origin_y + y * cell_size, cell_size, cell_size)
-                pygame.draw.rect(self.screen, self.COLOR_GRID, rect, 1)
-                
+                cell_x = map_origin_x + x * cell_size
+                cell_y = map_origin_y + y * cell_size
+
+                rect = pygame.Rect(
+                    cell_x,
+                    cell_y,
+                    cell_size,
+                    cell_size
+                )
+
                 tile = world.get_tile(x, y)
-                if tile:
-                    if tile.game_object and not getattr(tile.game_object, 'walkable', True):
-                        inner_rect = pygame.Rect(map_origin_x + x * cell_size + 2, map_origin_y + y * cell_size + 2, cell_size - 4, cell_size - 4)
-                        pygame.draw.rect(self.screen, (55, 48, 40), inner_rect)
+
+                # Usamos un color base para el suelo
+                cell_color = self.COLOR_GROUND
+
+                if tile and tile.terrain:
+                    terrain = tile.terrain
+
+                    # Los terrenos que no permiten caminar son muros
+                    if not getattr(terrain, "walkable", True):
+                        cell_color = self.COLOR_WALL
+
+                    # Los terrenos que hacen dano se muestran en rojo
+                    elif getattr(terrain, "health_modifier", 0) < 0:
+                        cell_color = self.COLOR_DANGER
+
+                    # Los terrenos que recuperan vida se muestran en verde
+                    elif getattr(terrain, "health_modifier", 0) > 0:
+                        cell_color = self.COLOR_HEALING
+
+                    # Los terrenos que ralentizan el movimiento se muestran en amarillo
+                    elif getattr(terrain, "movement_cost", 1) > 1:
+                        cell_color = self.COLOR_SLOW
+
+                # Pintamos el fondo de la casilla
+                pygame.draw.rect(self.screen, cell_color, rect)
+
+                # Si hay un objeto, lo representamos encima del terreno
+                if tile and tile.game_object:
+                    object_rect = rect.inflate(-6, -6)
+
+                    pygame.draw.rect(
+                        self.screen,
+                        self.COLOR_OBJECT,
+                        object_rect
+                    )
+
+                    pygame.draw.rect(
+                        self.screen,
+                        self.COLOR_ACCENT,
+                        object_rect,
+                        2
+                    )
+
+                    # Mostramos el simbolo del objeto si esta disponible
+                    object_char = getattr(tile.game_object, "char", None)
+
+                    if object_char:
+                        symbol = self.font_body.render(
+                            object_char,
+                            True,
+                            self.COLOR_TEXT
+                        )
+
+                        symbol_rect = symbol.get_rect(
+                            center=rect.center
+                        )
+
+                        self.screen.blit(symbol, symbol_rect)
+
+                # Dibujamos las lineas de separacion de las casillas
+                pygame.draw.rect(
+                    self.screen,
+                    self.COLOR_GRID,
+                    rect,
+                    1
+                )
+
+        # Marcamos el perimetro completo del mapa
+        map_rect = pygame.Rect(
+            map_origin_x,
+            map_origin_y,
+            world_w * cell_size,
+            world_h * cell_size
+        )
+
+        pygame.draw.rect(
+            self.screen,
+            self.COLOR_BORDER,
+            map_rect,
+            3
+        )
                     
         # Dibujar agentes encima del mapa
         for c in creatures:
