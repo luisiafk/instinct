@@ -1,6 +1,5 @@
 import re
-from token import NEWLINE
-from tokens import TokenType, Token
+from .tokens import TokenType, Token
 
 class LexerError(Exception):
     pass

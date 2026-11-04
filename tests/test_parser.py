@@ -1,7 +1,7 @@
-from tokens import TokenType
-from lexer import Lexer
-from parser import Parser
-from ast_nodes import dump_ast
+from backend.tokens import TokenType
+from backend.lexer import Lexer
+from backend.parser import Parser
+from backend.ast_nodes import dump_ast
 
 
 test_code = """ creature Uruk faction Isengard health 80 vision 6 lifespan 400

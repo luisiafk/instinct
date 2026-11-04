@@ -1,0 +1,22 @@
+creature Depredador
+faction rojas
+health 100
+vision 6
+lifespan 500
+
+start:
+    if health < 20 goto flee
+    if enemy_dist == 1 goto bite
+    if enemy_dist > 0 goto hunt
+wander:
+    move(1, 0, 1)
+    goto start
+bite:
+    consume(enemy_dx, enemy_dy, 20, 10)
+    goto start
+hunt:
+    move(enemy_dx, enemy_dy, 2)
+    goto start
+flee:
+    move(-enemy_dx, enemy_dy, 3)
+    goto start

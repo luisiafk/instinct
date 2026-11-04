@@ -1,9 +1,12 @@
 import os
 import pygame
-from loaders import load_terrains, load_objects, load_map
+import random
+
+from maps.loaders import load_terrains, load_objects, load_map
 from simulation import Simulation
 from entities import Creature
 from ui import TacticalVisualizer
+from backend.compiler import compile_file
 
 def main():
     # 1. Rutas absolutas dentro de 'src'
@@ -11,11 +14,12 @@ def main():
     print(f"[*] Directorio base de trabajo: {BASE_DIR}")
 
     terrains_path = os.path.join(BASE_DIR, "terrains", "terrenos.te")
-    objects_path = os.path.join(BASE_DIR, "objects", "objetos y recursos.ob")
+    objects_path = os.path.join(BASE_DIR, "objects", "objetos.ob")
+    scripts_dir = os.path.join(BASE_DIR, "scripts")
 
     print(f"[*] Cargando terrenos desde: {terrains_path}")
     terrains = load_terrains(terrains_path)
-    
+
     print(f"[*] Cargando objetos desde: {objects_path}")
     objects = load_objects(objects_path)
 
@@ -27,7 +31,31 @@ def main():
         ("Abismo de Fuego", os.path.join(BASE_DIR, "maps", "fuego.map")),
     ]
 
+
+
+    print(f"[*] Cargando scripts desde: {scripts_dir}")
     programs_dict = {}
+    creature_blueprints = {}
+    if os.path.exists(scripts_dir):
+        for filename in os.listdir(scripts_dir):
+            if filename.endswith(".ins"):
+                script_path = os.path.join(scripts_dir, filename)
+                try:
+                    program = compile_file(script_path)
+                    species_name = program.header.creature # o program.header.creature_name
+                    programs_dict[species_name] = program.statements  # o program.body
+                    creature_blueprints[species_name] = {
+                        'faction': program.header.faction,
+                        'health': program.header.health,
+                        'vision': program.header.vision,
+                        'lifespan': program.header.lifespan
+                    }
+                    print(species_name)
+                    print(f"   [OK] Compilado con éxito: {species_name}")
+                except Exception as err:
+                    print(f"   [X] Error en {filename}: {err}")
+
+
     total_ticks = 25  # Aumentamos un poco los ticks para disfrutar la simulación
 
     # Instanciar el visualizador gráfico
@@ -41,29 +69,33 @@ def main():
         if not os.path.exists(map_path):
             print(f"   [X] ¡ERROR CRÍTICO! No se encontró el mapa en {map_path}")
             continue
-            
-        world = load_map(map_path, terrains, objects)
+
+        world = load_map(width=20, height=15, terrains_dict=terrains, objects_dict=objects)
         sim = Simulation(world, seed=42)
 
-        # Instanciar criaturas
-        depredador = Creature(
-            species_name="Depredador", 
-            faction="Rojas", 
-            health=100, 
-            lifespan=50, 
-            vision=5
-        )
-        
-        recolector = Creature(
-            species_name="Recolector", 
-            faction="Azules", 
-            health=80, 
-            lifespan=60, 
-            vision=6
-        )
+        for species_name, data in creature_blueprints.items():
+            creature_instance = Creature(
+                species_name=species_name,
+                faction=data['faction'],
+                health=data['health'],
+                lifespan=data['lifespan'],
+                vision=data['vision']
+            )
 
-        sim.add_creature(depredador, 1, 1)
-        sim.add_creature(recolector, min(world.width - 2, 5), min(world.height - 2, 5))
+            placed = False
+            attempts = 0
+            while not placed and attempts < 100:
+                pos_x = random.randint(0, world.width - 1)
+                pos_y = random.randint(0, world.height - 1)
+
+                placed = sim.add_creature(creature_instance, pos_x, pos_y)
+                attempts += 1
+
+            if placed:
+                print(f"   [+] Criatura instanciada: [{species_name}] en {pos_x}, {pos_y}")
+            else:
+                print(f"   [!] No se pudo instanciar: {species_name} en {pos_x}, {pos_y}")
+
 
         tick = 1
         turn_timer = 0.0
@@ -93,7 +125,7 @@ def main():
             if turn_timer >= turn_delay:
                 turn_timer = 0.0
                 print(f"   -> Ejecutando Tick {tick}/{total_ticks} en {level_name}")
-                
+
                 sim.run_tick(programs_dict)
 
                 # Si mueren todas las criaturas, pasamos al siguiente nivel
@@ -115,4 +147,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-    

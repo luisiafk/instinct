@@ -1,5 +1,5 @@
-from lexer import Lexer
-from tokens import TokenType, Token
+from backend.lexer import Lexer
+from backend.tokens import TokenType, Token
 
 codigo_prueba = '''attack(10, 20, 5)
 if health < 20 and enemy_dist < 3: say("Cuidado")

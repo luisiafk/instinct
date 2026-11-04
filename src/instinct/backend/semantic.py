@@ -1,6 +1,4 @@
-from re import I
-
-from ast_nodes import (
+from .ast_nodes import (
     ProgramNode, LabelNode, AssignNode,
     IfGotoNode, GotoNode, ActionNode, BinaryOpNode,
     UnaryOpNode, NumberNode, StringNode, IdentifierNode,
@@ -22,6 +20,14 @@ class SemanticAnalyzer:
 
         if program.header:
             self.declared_vars.update({'creature', 'faction', 'health', 'vision', 'lifespan'})
+
+        BUILTIN_ENV = {
+            'enemy_dist', 'allies_near', 'random',
+            'enemy_dx', 'enemy_dy', 'x', 'y', 'GROUND',
+            'reserve_here'
+        }
+
+        self.declared_vars.update(BUILTIN_ENV)
 
         for stmt in program.statements:
             if isinstance(stmt, LabelNode):
@@ -54,7 +60,7 @@ class SemanticAnalyzer:
                 self.visit_expr(arg)
 
         else:
-            raise SemanticError(f"Instruction no recognized: {type(stmt).__name__}.")
+            raise SemanticError(f"Instruction not recognized: {type(stmt).__name__}.")
 
     def visit_expr(self, expr):
         if isinstance(expr, (NumberNode, StringNode)):
@@ -62,7 +68,7 @@ class SemanticAnalyzer:
 
         elif isinstance(expr, IdentifierNode):
             if expr.name not in self.declared_vars:
-                raise SemanticError(f"Variable mot defined '{expr.name}'.")
+                raise SemanticError(f"Variable not defined '{expr.name}'.")
 
         elif isinstance(expr, BinaryOpNode):
             self.visit_expr(expr.left)
