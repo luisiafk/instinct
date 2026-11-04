@@ -56,6 +56,7 @@ Para poner en marcha la simulacion grafica e interactiva del entorno:
 ```bash
     uv run pyhton src/instinct/main.py
 ```
+## Para agregar nuevas criaturas se deben agregar en `src/scripts/criatura.ins` siguiendo las reglasd del lenguaje instinct
 
 ### Tests
 
