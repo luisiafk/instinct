@@ -10,6 +10,17 @@ El proyecto sigue una estructura limpia modularizada bajo la carpeta src/instinc
 instinct/
 ├── src/
 │   └── instinct/
+│       ├── scripts/
+|           ├── depredador.ins #Depredador en lenguaje instinct
+|           └── recolector.ins #Recolector en lenguaje instinct
+|       ├── maps/
+|           ├── loaders.py     # Cargadores de archivos de configuración y escenarios
+|            ....              # Algunos mapas genericos
+|           └── bosque.map     # Mapa generico del bosque
+|       ├── objects/
+|           └── objetos.ob     # Objetos que pueden aparecer en el mapa
+|       ├── terrains/
+|            └── terrenos.te   # Tipos de terrenos
 │       ├── backend/           # Componentes del compilador
 │       │   ├── lexer.py       # Análisis léxico y manejo de tokens
 │       │   ├── parser.py      # Generación del Árbol de Sintaxis Abstracta (AST)
@@ -17,7 +28,7 @@ instinct/
 │       ├── actions.py         # Acciones ejecutables por las entidades (move, consume, say, etc.)
 │       ├── entities.py        # Definición, atributos y ciclo de vida de las criaturas
 │       ├── grid.py            # Gestión espacial y coordenadas de la grilla
-│       ├── loaders.py         # Cargadores de archivos de configuración y escenarios
+
 │       ├── perceptions.py     # Sensores del entorno (see, enemy_dist, aliados cercanos)
 │       ├── simulation.py      # Orquestador del bucle principal de simulación
 │       └── ui.py              # Interfaz gráfica y renderizado visual (Pygame)
