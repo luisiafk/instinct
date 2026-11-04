@@ -193,11 +193,6 @@ class Simulation:
 
             node_type = stmt.__class__.__name__
 
-            print(
-                f"[DEBUG] T{self.tick_count} | {creature.species_name} (pos: {creature.x}, {creature.y}), hp: {creature.health} "
-                f"| Ip: {ip} -> Ejecutando {node_type}: stmt: {stmt}"
-            )
-
             # 1. Etiquetas (LabelNode): solo avanzamos el puntero
             if node_type == "LabelNode":
                 ip += 1

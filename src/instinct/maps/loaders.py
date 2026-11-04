@@ -68,13 +68,12 @@ def populate_map_with_object(grid: WorldGrid, object_dict: dict, item_prob : flo
                     template_obj = random.choice(avialable_items)
                     new_object = GameObject(
                         name=template_obj.name,
+                        symbol=template_obj.symbol,
                         walkable=template_obj.walkable,
                         reserve=template_obj.reserve,
                         destructible=template_obj.destructible
                     )
                     grid.set_tile_object(x, y, new_object)
-
-
 
 def load_terrains(filepath: str) -> dict:
     """
@@ -149,7 +148,14 @@ def load_objects(filepath: str) -> dict:
                     symbol = parts[2]
                     value = int(parts[4])  # Capturar el valor numérico del recurso
 
-                    objects[symbol] = GameObject(name=name, walkable=False, reserve=value, destructible=True)
+                    objects[symbol] = GameObject(
+                        name=name,
+                        symbol=symbol,
+                        walkable=True,
+                        reserve=value,
+                        destructible=True
+                    )
+
                     objects[obj_id] = objects[symbol]
             # Soporte para formato separado por comas
             elif ',' in clean_line:
@@ -171,32 +177,8 @@ def load_map(width: int, height: int, terrains_dict: dict, objects_dict: dict) -
     """
     map_rows = generate_random_map_lines(width, height)
 
-    grid = WorldGrid(width=width, height=height)
+    grid = parse_maps_rows_to_grid(map_rows, terrains_dict, objects_dict)
 
-    for y, row in enumerate(map_rows):
-        for x, char in enumerate(row):
-            if x >= width:
-                break
-
-            # Obtener terreno base por defecto (punto o ground)
-            terrain = terrains_dict.get('.', terrains_dict.get('ground', Terrain(name="ground")))
-            game_object = None
-
-            # Evaluar el carácter del mapa frente a los diccionarios cargados
-            if char in terrains_dict:
-                terrain = terrains_dict[char]
-            elif char in objects_dict:
-                game_object = objects_dict[char]
-            elif char == 'T':
-                terrain = terrains_dict.get('T', Terrain(name="resource_terrain", regen_rate=10))
-            elif char == '#':
-                game_object = objects_dict.get('#', GameObject(name="Rock", walkable=False))
-            elif char in ('A', 'B'):
-                # Son puntos de inicio de criaturas, se deja el terreno base debajo
-                terrain = terrains_dict.get('.', Terrain(name="ground"))
-
-            grid.set_tile_terrain(x, y, terrain)
-            if game_object:
-                grid.set_tile_object(x, y, game_object)
+    populate_map_with_object(grid, objects_dict, item_prob=0.08)
 
     return grid
