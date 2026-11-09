@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+@dataclass
 class ASTNode:
-    pass
+    lineno : int
 
 @dataclass
 class HeaderNode(ASTNode):
@@ -72,13 +73,13 @@ class FunctionCallNode(ASTNode):
     name : str
     args : List[ASTNode]
 
-    def evaluate(self, memory):
+    def evaluate(self, memory: any) -> any:
         evaluated_args = [arg.evaluate(memory) for arg in self.args]
 
         if hasattr(memory, 'call_function'):
             return memory.call_function(self.name, evaluated_args)
 
-        return evaluated_args
+        raise RuntimeError(f"Error en la linea {self.lineno}: Funcion o llamada desconocida '{self.name}'.")
 
 @dataclass
 class BinaryOpNode(ASTNode):
@@ -116,6 +117,15 @@ class BinaryOpNode(ASTNode):
             return 1 if left_val == right_val else 0
         elif self.op == '!=':
             return 1 if left_val != right_val else 0
+        elif self.op == 'and':
+            if not left_val:
+                return False
+            return bool(self.right.evaluate(memory))
+        elif self.op == 'or':
+            if not left_val:
+                return True
+            return bool(self.right.evaluate(memory))
+
         else:
             raise RuntimeError(f"Operador binario desconocido: {self.op}")
 

@@ -5,9 +5,9 @@ from typing import Any
 
 class TokenType(Enum):
     #LITERALES
-    NUMBER = (r'-?\d+', False)
+    NUMBER = (r'\d+(\.\d+)?', False)
     STRING = (r'"([^"\n]*)"', False)
-    IDENTIFIER = (r'[a-zA-z_]\w*', False)
+    IDENTIFIER = (r'[a-zA-Z_][a-zA-Z0-9_]*', False)
 
     #COMPARACION
     EQUAL = (r'==', False)
