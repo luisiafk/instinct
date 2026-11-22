@@ -1,11 +1,11 @@
-
 from pathlib import Path
 
 from instinct.loaders.creature_loader import CreatureLoader
 from instinct.loaders.map_loader import MapLoader
 from instinct.loaders.object_loader import ObjectLoader
 from instinct.loaders.terrain_loader import TerrainLoader
-from instinct.world.entities import Creature, Terrain, WorldObject
+from instinct.loaders.building_loader import BuildingLoader
+from instinct.world.entities import Creature, Terrain, WorldObject, Building
 from instinct.world.world_grid import WorldGrid
 
 
@@ -17,6 +17,7 @@ class ResourceManager:
 
         self.terrains: dict[str, Terrain] = {}
         self.objects: dict[str, WorldObject] = {}
+        self.buildings: dict[str, Building] = {}
         self.maps: dict[str, WorldGrid] = {}
         self.creatures: dict[str, Creature] = {}
 
@@ -24,8 +25,10 @@ class ResourceManager:
 
         self.terrain_loader = TerrainLoader()
         self.object_loader = ObjectLoader()
+        self.building_loader = BuildingLoader()
         self.map_loader = MapLoader()
         self.creature_loader = CreatureLoader()
+
 
     def load_all(self) -> None:
         """Carga todos los recursos en el orden establecido."""
@@ -34,11 +37,13 @@ class ResourceManager:
 
         self.terrains.clear()
         self.objects.clear()
+        self.buildings.clear()
         self.maps.clear()
         self.creatures.clear()
 
         self._load_terrains()
         self._load_objects()
+        self._load_buildings()
         self._validate_base_resources()
         self._load_maps()
         self._load_creatures()
@@ -63,6 +68,26 @@ class ResourceManager:
             except (ValueError, TypeError) as error:
                 self._record_error(error)
 
+    def _load_buildings(self) -> None:
+        directory = self.resource_dir / "buildings"
+
+        for filepath in self._get_files(directory, "*.bld"):
+            try:
+                building = self.building_loader.load_file(filepath)
+
+                if building.name in self.buildings:
+                    raise ValueError(
+                        f"El edificio '{building.name}' está duplicado "
+                        f"en '{filepath}'."
+                    )
+
+                self._validate_unique_char(building.char, filepath)
+
+                self.buildings[building.name] = building
+
+            except (ValueError, TypeError) as error:
+                self._record_error(error)
+
     def _load_maps(self) -> None:
         directory = self.resource_dir / "maps"
 
@@ -81,6 +106,7 @@ class ResourceManager:
                     filepath,
                     terrains,
                     objects,
+                    list(self.buildings.values()),
                 )
 
                 if map_name in self.maps:
@@ -154,6 +180,13 @@ class ResourceManager:
                     f"al objeto '{obj.name}'. Archivo: '{filepath}'."
                 )
 
+        for building in self.buildings.values():
+            if building.char == char:
+                raise ValueError(
+                    f"El carácter '{char}' ya pertenece "
+                    f"al edificio '{building.name}'. Archivo: '{filepath}'."
+                )
+
     def _validate_base_resources(self) -> None:
         grass = self.terrains.get("Grass")
 
@@ -200,6 +233,9 @@ class ResourceManager:
 
     def get_object(self, name: str):
         return self.objects.get(name)
+
+    def get_building(self, name: str):
+        return self.buildings.get(name)
 
     def get_map(self, name: str):
         return self.maps.get(name)

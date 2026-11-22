@@ -10,8 +10,8 @@ start:
     if enemy_dist == 1 goto defend
     if enemies_near > 0 and roars_near == 0 goto signal
     if enemy_dist > 1 goto pursue
-    if object_dist == 1 goto eat
-    if object_dist > 1 goto forage
+    if consumable_dist == 1 goto eat
+    if consumable_dist > 1 goto forage
     goto explore
 
 defend:
@@ -27,8 +27,8 @@ pursue:
     goto start
 
 recover:
-    if object_dist == 1 goto eat
-    if object_dist > 1 goto forage
+    if consumable_dist == 1 goto eat
+    if consumable_dist > 1 goto forage
     if enemy_dist == 1 goto retreat
     goto explore
 
@@ -37,11 +37,11 @@ retreat:
     goto start
 
 eat:
-    consume(object_dx, object_dy, 10, 18)
+    consume(consumable_dx, consumable_dy, 10, 18)
     goto start
 
 forage:
-    move(object_dx, object_dy, 1)
+    move(consumable_dx, consumable_dy, 1)
     goto start
 
 explore:

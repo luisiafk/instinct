@@ -1,0 +1,6 @@
+building HokageBuilding
+char H
+width 2
+height 2
+asset special/hokage_building.png
+walkable false false; false false

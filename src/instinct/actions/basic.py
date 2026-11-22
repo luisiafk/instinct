@@ -56,7 +56,7 @@ class MoveAction(Action):
 
             next_tile = world.get_tile(next_x, next_y)
 
-            if next_tile.is_occupied:
+            if not next_tile.terrain.walkable or next_tile.is_occupied:
                 break
 
             current_x = creature.x
@@ -295,7 +295,7 @@ class ConsumeAction(Action):
             return
 
         reserve = target_object.reserve or 0
-        
+
         if reserve <= 0:
             return
 

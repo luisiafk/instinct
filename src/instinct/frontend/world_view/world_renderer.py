@@ -3,7 +3,7 @@ import pygame
 from instinct.frontend.world_view.biome_renderer import BiomeRenderer
 from instinct.frontend.world_view.grid_renderer import GridRenderer
 from instinct.frontend.world_view.object_renderer import ObjectRenderer
-
+from instinct.frontend.world_view.building_renderer import BuildingRenderer
 
 class WorldRenderer:
     """Coordina la representación visual del mundo."""
@@ -17,6 +17,7 @@ class WorldRenderer:
     ):
         self.biome_renderer = BiomeRenderer(asset_loader)
         self.object_renderer = ObjectRenderer(asset_loader)
+        self.building_renderer = BuildingRenderer(asset_loader)
         self.grid_renderer = GridRenderer(enabled=show_grid)
         self.world = None
         self.camera = None
@@ -25,6 +26,7 @@ class WorldRenderer:
         """Asigna el mundo que se va a representar."""
 
         self.world = world
+        self.building_renderer.clear_cache()
 
     def set_camera(self, camera):
         """Asigna la cámara utilizada para visualizar el mundo."""
@@ -73,6 +75,12 @@ class WorldRenderer:
                     rect,
                 )
 
+        self.building_renderer.draw_world(
+            screen,
+            self.world,
+            self.camera,
+        )
+
         self.grid_renderer.draw(screen, self.camera)
 
         screen.set_clip(previous_clip)
@@ -93,3 +101,6 @@ class WorldRenderer:
 
         self.object_renderer.asset_loader = asset_loader
         self.object_renderer.object_images.clear()
+
+        self.building_renderer.asset_loader = asset_loader
+        self.building_renderer.clear_cache()

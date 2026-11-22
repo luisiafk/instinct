@@ -1,7 +1,7 @@
 # Madara - combatiente dominante
 creature Madara
 faction uchiha
-health 140
+health 100
 vision 5
 lifespan 700
 
@@ -10,8 +10,8 @@ start:
     if enemies_near > 0 and roars_near == 0 goto declare
     if enemy_dist == 1 goto crush
     if enemy_dist > 1 goto advance
-    if object_dist == 1 goto consume_resource
-    if object_dist > 1 goto approach_resource
+    if consumable_dist == 1 goto consume_resource
+    if consumable_dist > 1 goto approach_resource
     goto patrol
 
 declare:
@@ -27,8 +27,8 @@ advance:
     goto start
 
 recover:
-    if object_dist == 1 goto consume_resource
-    if object_dist > 1 goto approach_resource
+    if consumable_dist == 1 goto consume_resource
+    if consumable_dist > 1 goto approach_resource
     if enemy_dist == 1 goto repel
     goto patrol
 
@@ -37,11 +37,11 @@ repel:
     goto start
 
 consume_resource:
-    consume(object_dx, object_dy, 15, 22)
+    consume(consumable_dx, consumable_dy, 15, 22)
     goto start
 
 approach_resource:
-    move(object_dx, object_dy, 1)
+    move(consumable_dx, consumable_dy, 1)
     goto start
 
 patrol:

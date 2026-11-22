@@ -9,8 +9,8 @@ start:
     if health <= 30 goto recover
     if enemy_dist == 1 goto strike
     if enemy_dist > 1 goto stalk
-    if object_dist == 1 goto consume_resource
-    if object_dist > 1 goto approach_resource
+    if consumable_dist == 1 goto consume_resource
+    if consumable_dist > 1 goto approach_resource
     goto explore
 
 strike:
@@ -22,8 +22,8 @@ stalk:
     goto start
 
 recover:
-    if object_dist == 1 goto consume_resource
-    if object_dist > 1 goto approach_resource
+    if consumable_dist == 1 goto consume_resource
+    if consumable_dist > 1 goto approach_resource
     if enemy_dist == 1 goto withdraw
     goto explore
 
@@ -32,11 +32,11 @@ withdraw:
     goto start
 
 consume_resource:
-    consume(object_dx, object_dy, 12, 20)
+    consume(consumable_dx, consumable_dy, 12, 20)
     goto start
 
 approach_resource:
-    move(object_dx, object_dy, 1)
+    move(consumable_dx, consumable_dy, 1)
     goto start
 
 explore:

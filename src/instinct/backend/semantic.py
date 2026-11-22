@@ -30,11 +30,13 @@ class SemanticAnalyzer:
             'orientation', 'x', 'y',
 
             # Percepciones de criaturas y objetos
-            'allies_near', 'enemies_near', 'objects_near',
+            'allies_near', 'enemies_near', 'objects_near', 'consumables_near',
+
 
             'enemy_dist', 'enemy_dx', 'enemy_dy',
             'ally_dist', 'ally_dx', 'ally_dy',
             'object_dist', 'object_dx', 'object_dy',
+            'consumable_dist', 'consumable_dx', 'consumable_dy',
 
             # Rugidos
             'roars_near', 'last_roar',

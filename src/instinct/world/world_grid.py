@@ -6,12 +6,12 @@ La grilla almacena las casillas utilizando la convención:
     tiles[y][x]
 
 Cada casilla posee su propio terreno y puede contener
-un objeto o una criatura.
+un objeto, una criatura o formar parte de un edificio.
 """
 
 from copy import deepcopy
 
-from instinct.world.entities import Creature, Terrain, WorldObject
+from instinct.world.entities import Building, Creature, Terrain, WorldObject
 from instinct.world.tile import Tile
 
 
@@ -68,7 +68,7 @@ class WorldGrid:
         return self.tiles[y][x]
 
     def place_creature(self, creature: Creature, x: int, y: int) -> None:
-        """Coloca una criatura en una casilla libre."""
+        """Coloca una criatura en una casilla libre y transitable."""
         tile = self.get_tile(x, y)
         tile.set_creature(creature)
 
@@ -79,6 +79,68 @@ class WorldGrid:
         """Coloca un objeto en una casilla libre."""
         tile = self.get_tile(x, y)
         tile.set_object(obj)
+
+    def place_building(
+        self,
+        building: Building,
+        x: int,
+        y: int,
+    ) -> None:
+        """
+        Coloca un edificio completo en el mundo.
+
+        (x, y) representa la esquina superior izquierda de su huella lógica.
+        Todas las casillas comparten la misma instancia del edificio.
+        """
+        if not isinstance(building, Building):
+            raise TypeError("Solo se pueden colocar edificios válidos.")
+
+        if not self.in_bounds(x, y):
+            raise IndexError(
+                f"La posición ({x}, {y}) está fuera de los límites del mundo."
+            )
+
+        if x + building.width > self.width or y + building.height > self.height:
+            raise ValueError(
+                f"El edificio '{building.name}' queda fuera de los límites "
+                "del mundo."
+            )
+
+        # Evitar colocar dos veces la misma instancia.
+        for row in self.tiles:
+            for tile in row:
+                if tile.building is building:
+                    raise ValueError(
+                        f"El edificio '{building.name}' ya está colocado."
+                    )
+
+        # Primera pasada: validar toda la huella sin modificar el mundo.
+        footprint: list[tuple[Tile, int, int]] = []
+
+        for offset_y in range(building.height):
+            for offset_x in range(building.width):
+                tile = self.tiles[y + offset_y][x + offset_x]
+
+                if tile.has_building:
+                    raise ValueError(
+                        f"La huella del edificio '{building.name}' "
+                        "se superpone con otro edificio."
+                    )
+
+                if tile.object is not None or tile.creature is not None:
+                    raise ValueError(
+                        f"La huella del edificio '{building.name}' "
+                        "contiene un objeto o una criatura."
+                    )
+
+                footprint.append((tile, offset_x, offset_y))
+
+        # Segunda pasada: colocar el edificio después de validar todo.
+        for tile, offset_x, offset_y in footprint:
+            tile.set_building(building, offset_x, offset_y)
+
+        building.x = x
+        building.y = y
 
     def remove_creature(self, x: int, y: int) -> Creature | None:
         """Retira y devuelve la criatura de una casilla."""

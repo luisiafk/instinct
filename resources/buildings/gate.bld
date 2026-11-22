@@ -1,0 +1,8 @@
+building Gate
+char G
+width 3
+height 1
+asset special/gate.png
+visual_width 3
+visual_height 3
+walkable false true false

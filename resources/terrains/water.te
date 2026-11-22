@@ -1,0 +1,5 @@
+terrain Water
+char ~
+resource_max 100
+regen 0
+walkable true

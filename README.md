@@ -8,24 +8,35 @@ El proyecto combina un compilador desarrollado desde cero, un entorno de ejecuci
 
 ## Contenido
 
-- [Características](#características)
-- [Arquitectura](#arquitectura)
-- [Tecnologías](#tecnologías)
-- [Instalación](#instalación)
-- [Ejecución](#ejecución)
-- [Recursos del mundo](#recursos-del-mundo)
-- [Pruebas y calidad](#pruebas-y-calidad)
-- [Documentación y seguimiento](#documentación-y-seguimiento)
+- [Instinct](#instinct)
+  - [Contenido](#contenido)
+  - [Características](#características)
+    - [Lenguaje Instinct](#lenguaje-instinct)
+    - [Motor de simulación](#motor-de-simulación)
+    - [Interfaz gráfica](#interfaz-gráfica)
+  - [Arquitectura](#arquitectura)
+    - [Responsabilidades principales](#responsabilidades-principales)
+  - [Tecnologías](#tecnologías)
+  - [Instalación](#instalación)
+  - [Ejecución](#ejecución)
+  - [Recursos del mundo](#recursos-del-mundo)
+    - [Ejemplo de terreno](#ejemplo-de-terreno)
+    - [Ejemplo de objeto](#ejemplo-de-objeto)
+    - [Mapas](#mapas)
+  - [Pruebas y calidad](#pruebas-y-calidad)
+  - [Documentación y seguimiento](#documentación-y-seguimiento)
 
 ## Características
 
 ### Lenguaje Instinct
+
 - Lenguaje DSL propio para definir el comportamiento de las criaturas.
 - Análisis léxico, sintáctico y semántico.
 - Construcción y evaluación de un árbol de sintaxis abstracta (AST).
 - Ejecución de instrucciones, condiciones, funciones y acciones mediante el runtime.
 
 ### Motor de simulación
+
 - Mundo basado en una cuadrícula de casillas.
 - Entidades diferenciadas: criaturas, terrenos y objetos.
 - Sistema de acciones y percepciones para interactuar con el entorno.
@@ -33,6 +44,7 @@ El proyecto combina un compilador desarrollado desde cero, un entorno de ejecuci
 - Registro de eventos y aplicación de reglas naturales del mundo.
 
 ### Interfaz gráfica
+
 - Aplicación gráfica desarrollada con Pygame CE.
 - Menú principal y escena de simulación.
 - Renderizado de terrenos, objetos y criaturas.
@@ -78,6 +90,7 @@ instinct/
 ### Responsabilidades principales
 
 | Módulo | Responsabilidad |
+
 |---|---|
 | `backend` | Convierte el código Instinct en una representación ejecutable y valida su estructura y semántica. |
 | `runtime` | Ejecuta los programas y administra su contexto de ejecución. |
@@ -135,6 +148,7 @@ Ambas formas de arranque fueron comprobadas y conducen al menú principal de la 
 Los recursos de la simulación se definen mediante archivos de texto ubicados en `resources/`.
 
 | Extensión | Recurso | Ubicación |
+
 |---|---|---|
 | `.ins` | Programa y comportamiento de una criatura | `resources/creatures/` |
 | `.te` | Definición de un terreno | `resources/terrains/` |
@@ -160,6 +174,8 @@ Archivo `resources/objects/rock.ob`:
 object Rock
 char #
 resource_max 100
+consumable false
+destructible false
 ```
 
 ### Mapas

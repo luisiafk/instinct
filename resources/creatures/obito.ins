@@ -1,7 +1,7 @@
 # Obito - combatiente tactico y evasivo
 creature Obito
 faction akatsuki
-health 110
+health 100
 vision 6
 lifespan 600
 
@@ -10,8 +10,8 @@ start:
     if enemies_near > 1 and health <= 70 goto evade
     if enemy_dist == 1 goto assess
     if enemy_dist > 1 goto stalk
-    if object_dist == 1 goto consume_resource
-    if object_dist > 1 goto approach_resource
+    if consumable_dist == 1 goto consume_resource
+    if consumable_dist > 1 goto approach_resource
     goto observe
 
 assess:
@@ -24,8 +24,8 @@ stalk:
     goto start
 
 hide:
-    if object_dist == 1 goto consume_resource
-    if object_dist > 1 goto approach_resource
+    if consumable_dist == 1 goto consume_resource
+    if consumable_dist > 1 goto approach_resource
     if enemy_dist == 1 goto evade
     goto observe
 
@@ -34,11 +34,11 @@ evade:
     goto start
 
 consume_resource:
-    consume(object_dx, object_dy, 10, 18)
+    consume(consumable_dx, consumable_dy, 10, 18)
     goto start
 
 approach_resource:
-    move(object_dx, object_dy, 1)
+    move(consumable_dx, consumable_dy, 1)
     goto start
 
 observe:

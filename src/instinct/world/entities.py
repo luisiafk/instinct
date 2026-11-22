@@ -57,6 +57,7 @@ class Terrain(ResourceEntity):
     """Terreno que regenera sus recursos durante la simulación."""
 
     regen: int = 0
+    walkable: bool = True
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -66,6 +67,9 @@ class Terrain(ResourceEntity):
 
         if self.regen < 0:
             raise ValueError("La regeneración no puede ser negativa.")
+
+        if not isinstance(self.walkable, bool):
+            raise TypeError("La propiedad 'walkable' debe ser booleana.")
 
 
 @dataclass
@@ -91,6 +95,115 @@ class WorldObject(ResourceEntity):
             raise TypeError(
                 "La propiedad 'destructible' debe ser booleana."
             )
+
+
+@dataclass
+class Building:
+    """Estructura del mundo con huella lógica y dimensiones visuales."""
+
+    name: str
+    char: str
+    width: int
+    height: int
+    asset: str
+    walkable: tuple[tuple[bool, ...], ...]
+
+    # Dimensiones visuales expresadas en tiles.
+    visual_width: int | None = None
+    visual_height: int | None = None
+
+    # Coordenadas de origen dentro del mapa.
+    x: int = 0
+    y: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise ValueError("El nombre del edificio no puede estar vacío.")
+
+        if not isinstance(self.char, str) or len(self.char) != 1:
+            raise ValueError(
+                "El símbolo del edificio debe ser exactamente un carácter."
+            )
+
+        integer_fields = {
+            "El ancho": self.width,
+            "El alto": self.height,
+            "La coordenada x": self.x,
+            "La coordenada y": self.y,
+        }
+
+        for field_name, value in integer_fields.items():
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise TypeError(f"{field_name} debe ser un número entero.")
+
+        if self.width <= 0 or self.height <= 0:
+            raise ValueError(
+                "Las dimensiones del edificio deben ser mayores que cero."
+            )
+
+        if not isinstance(self.asset, str) or not self.asset.strip():
+            raise ValueError("El recurso gráfico del edificio es obligatorio.")
+
+        if not isinstance(self.walkable, (tuple, list)):
+            raise TypeError("La matriz de transitabilidad debe ser una matriz.")
+
+        if len(self.walkable) != self.height:
+            raise ValueError(
+                "La matriz de transitabilidad debe tener tantas filas "
+                "como indique el alto del edificio."
+            )
+
+        normalized_walkable = []
+
+        for row in self.walkable:
+            if not isinstance(row, (tuple, list)):
+                raise TypeError(
+                    "Cada fila de transitabilidad debe ser una secuencia."
+                )
+
+            if len(row) != self.width:
+                raise ValueError(
+                    "Cada fila de transitabilidad debe tener tantos valores "
+                    "como indique el ancho del edificio."
+                )
+
+            if not all(isinstance(value, bool) for value in row):
+                raise TypeError(
+                    "Los valores de transitabilidad deben ser booleanos."
+                )
+
+            normalized_walkable.append(tuple(row))
+
+        self.walkable = tuple(normalized_walkable)
+
+        if self.visual_width is None:
+            self.visual_width = self.width
+
+        if self.visual_height is None:
+            self.visual_height = self.height
+
+        for field_name, value in {
+            "El ancho visual": self.visual_width,
+            "El alto visual": self.visual_height,
+        }.items():
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise TypeError(f"{field_name} debe ser un número entero.")
+
+            if value <= 0:
+                raise ValueError(
+                    f"{field_name} debe ser mayor que cero."
+                )
+
+    def is_walkable_at(self, x: int, y: int) -> bool:
+        """Indica si una posición local de la estructura es transitable."""
+
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            raise IndexError(
+                "La posición está fuera de la huella del edificio."
+            )
+
+        return self.walkable[y][x]
+
 
 
 @dataclass

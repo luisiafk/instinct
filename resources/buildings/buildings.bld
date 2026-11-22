@@ -1,0 +1,6 @@
+building House
+char A
+width 1
+height 1
+asset house.png
+walkable false

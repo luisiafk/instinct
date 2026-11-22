@@ -7,7 +7,7 @@ from instinct.world.entities import Terrain
 class TerrainLoader:
     """Carga y valida definiciones de terrenos desde archivos .te."""
 
-    REQUIRED_FIELDS: ClassVar[set[str]] = {"char", "resource_max", "regen"}
+    REQUIRED_FIELDS: ClassVar[set[str]] = {"char", "resource_max", "regen", "walkable"}
 
     def load_file(self, filepath: str | Path) -> Terrain:
         """Lee un archivo .te y devuelve el terreno definido en él."""
@@ -147,11 +147,26 @@ class TerrainLoader:
                 "'regen' no puede ser negativo.",
             )
 
+        walkable = True
+
+        if "walkable" in fields:
+            value, line_number = fields["walkable"]
+
+            if value.lower() not in {"true", "false"}:
+                self._error(
+                    source,
+                    line_number,
+                    "'walkable' debe ser true o false.",
+                )
+
+            walkable = value.lower() == "true"
+
         return Terrain(
             name=declaration,
             char=char,
             resource_max=resource_max,
             regen=regen,
+            walkable=walkable,
         )
 
     @staticmethod

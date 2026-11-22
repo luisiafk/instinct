@@ -45,7 +45,7 @@ class EventPanel:
             self.scroll_panel.rect.height,
             len(self.events) * 38 + 12,
         )
-
+        
         self.scroll_panel.set_content_height(content_height)
 
     def handle_event(self, event):

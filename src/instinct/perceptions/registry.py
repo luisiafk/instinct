@@ -98,10 +98,11 @@ class PerceptionRegistry:
             "terrain_here", "reserve_here",
             "width", "height", "tick",
             "total_creatures", "total_allies", "total_enemies",
-            "allies_near", "enemies_near", "objects_near",
+            "allies_near", "enemies_near", "objects_near", "consumables_near",
             "ally_dist", "ally_dx", "ally_dy",
             "enemy_dist", "enemy_dx", "enemy_dy",
             "object_dist", "object_dx", "object_dy",
+            "consumable_dist", "consumable_dx", "consumable_dy",
             "roars_near", "last_roar",
         }
 

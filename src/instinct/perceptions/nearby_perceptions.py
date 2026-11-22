@@ -1,4 +1,3 @@
-
 from instinct.perceptions.base import PerceptionGroup
 from instinct.runtime.execution_context import ExecutionContext
 
@@ -13,6 +12,7 @@ class NearbyPerceptions(PerceptionGroup):
         allies = []
         enemies = []
         objects = []
+        consumables = []
 
         vision = creature.vision
 
@@ -44,6 +44,9 @@ class NearbyPerceptions(PerceptionGroup):
                 if tile.object is not None:
                     objects.append((x, y))
 
+                    if tile.object.consumable:
+                        consumables.append((x, y))
+
         ally_dist, ally_dx, ally_dy = self._nearest_target(
             creature.x,
             creature.y,
@@ -62,12 +65,19 @@ class NearbyPerceptions(PerceptionGroup):
             objects,
         )
 
+        consumable_dist, consumable_dx, consumable_dy = self._nearest_target(
+            creature.x,
+            creature.y,
+            consumables,
+        )
+
         roars_near, last_roar = self._calculate_roars(context)
 
         return {
             "allies_near": len(allies),
             "enemies_near": len(enemies),
             "objects_near": len(objects),
+            "consumables_near": len(consumables),
             "enemy_dist": enemy_dist,
             "enemy_dx": enemy_dx,
             "enemy_dy": enemy_dy,
@@ -77,6 +87,9 @@ class NearbyPerceptions(PerceptionGroup):
             "object_dist": object_dist,
             "object_dx": object_dx,
             "object_dy": object_dy,
+            "consumable_dist": consumable_dist,
+            "consumable_dx": consumable_dx,
+            "consumable_dy": consumable_dy,
             "roars_near": roars_near,
             "last_roar": last_roar,
         }
