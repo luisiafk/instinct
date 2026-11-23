@@ -54,6 +54,7 @@ class Simulation:
         self.function_registry = FunctionRegistry()
 
         self._contexts: dict[int, ExecutionContext] = {}
+        self._last_executed_lines: dict[int, int] = {}
 
     @property
     def is_finished(self) -> bool:
@@ -116,6 +117,15 @@ class Simulation:
             context=context,
             tick=tick,
         )
+
+        self._last_executed_lines[id(creature)] = (
+            context.last_executed_line
+        )
+
+    def get_last_executed_line(self, creature: Creature) -> int | None:
+        """Devuelve la última línea ejecutada por una criatura."""
+
+        return self._last_executed_lines.get(id(creature))
 
     def _cleanup_contexts(self) -> None:
         """Elimina los contextos de criaturas que ya no están en el mundo."""

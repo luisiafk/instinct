@@ -30,6 +30,7 @@ from instinct.frontend.interface.simulation_controls import SimulationControls
 from instinct.frontend.interface.tile_info_panel import TileInfoPanel
 
 from instinct.frontend.windows.base_window import BaseWindow
+from instinct.frontend.windows.code_windows import CodeWindows
 
 class SimulationScene(BaseScene):
     """Escena principal de visualización y control del mundo."""
@@ -60,6 +61,7 @@ class SimulationScene(BaseScene):
         )
 
         self.selection = Selection()
+        self.code_window = None
 
         self.camera = None
         self.world = None
@@ -295,6 +297,19 @@ class SimulationScene(BaseScene):
                         MainMenu(self.game)
                     )
 
+                return
+
+            if event.key == pygame.K_c:
+                if not self.selection.get_selected_creatures():
+                    return
+
+                if self.code_window is None:
+                    self.code_window = CodeWindows(
+                        self.game,
+                        self,
+                    )
+
+                self.game.window_manager.open(self.code_window)
                 return
 
             if self.controller is None:

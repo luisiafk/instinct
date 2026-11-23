@@ -63,6 +63,7 @@ def execute_turn(context: ExecutionContext, tick: int) -> None:
 
             statement = program.statements[context.instruction_pointer]
             executed_instructions += 1
+            context.last_executed_line = statement.lineno
 
             # Las etiquetas no producen efectos.
             if isinstance(statement, LabelNode):

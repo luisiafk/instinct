@@ -97,6 +97,7 @@ class ExecutionContext:
         self.environment = Environment()
 
         self.instruction_pointer = program.start_position
+        self.last_executed_line: int | None = None
         self.wait_turns = 0
         self.current_tick = 0
 
