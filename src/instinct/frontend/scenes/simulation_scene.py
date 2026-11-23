@@ -29,6 +29,8 @@ from instinct.frontend.interface.event_panel import EventPanel
 from instinct.frontend.interface.simulation_controls import SimulationControls
 from instinct.frontend.interface.tile_info_panel import TileInfoPanel
 
+from instinct.frontend.windows.base_window import BaseWindow
+
 class SimulationScene(BaseScene):
     """Escena principal de visualización y control del mundo."""
 
@@ -277,7 +279,6 @@ class SimulationScene(BaseScene):
     def handle_event(self, event):
 
         if event.type == pygame.KEYDOWN:
-
             if event.key == pygame.K_ESCAPE:
                 if self.controller is not None:
                     self.controller.pause()

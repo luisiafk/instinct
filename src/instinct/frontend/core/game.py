@@ -3,6 +3,7 @@ import pygame
 
 from instinct.frontend.core.scene_manager import SceneManager
 from instinct.frontend.interface.theme_manager import ThemeManager
+from instinct.frontend.windows.window_manager import WindowManager
 from instinct.frontend.settings import (
     DEFAULT_THEME,
     FULLSCREEN,
@@ -42,6 +43,7 @@ class Game:
         self.running = True
 
         self.theme_manager = ThemeManager(DEFAULT_THEME)
+        self.window_manager = WindowManager(self)
 
         self.scene_manager = SceneManager(self)
 
@@ -97,10 +99,16 @@ class Game:
                     self.running = False
                     continue
 
+                if self.window_manager.handle_event(event):
+                    continue
+
                 self.scene_manager.handle_event(event)
 
             self.scene_manager.update(dt)
+            self.window_manager.update(dt)
+
             self.scene_manager.draw(self.screen)
+            self.window_manager.draw(self.screen)
 
             pygame.display.flip()
 
