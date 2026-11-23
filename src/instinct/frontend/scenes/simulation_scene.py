@@ -23,7 +23,6 @@ from instinct.frontend.animation.animation_controller import AnimationController
 from instinct.frontend.adapters.event_adapter import EventAdapter
 from instinct.frontend.world_view.selection import Selection
 
-from instinct.frontend.interface.theme_manager import ThemeManager
 from instinct.frontend.interface.top_bar import TopBar
 from instinct.frontend.interface.creature_panel import CreaturePanel
 from instinct.frontend.interface.event_panel import EventPanel
@@ -40,7 +39,6 @@ class SimulationScene(BaseScene):
         self.selected_map_name = map_name
         self.creature_counts = creature_counts or {}
 
-        self.resource_manager = None
         self.simulation = None
         self.controller = None
 
@@ -71,7 +69,7 @@ class SimulationScene(BaseScene):
         self.last_mouse_position = None
 
         # Componentes del HUD.
-        self.theme_manager = ThemeManager()
+        self.theme_manager = self.game.theme_manager
         self.top_bar = TopBar(self.theme_manager)
         self.creature_panel = CreaturePanel()
         self.event_panel = None
@@ -281,11 +279,21 @@ class SimulationScene(BaseScene):
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_ESCAPE:
-                from instinct.frontend.scenes.main_menu import MainMenu
+                if self.controller is not None:
+                    self.controller.pause()
 
-                self.game.scene_manager.change_scene(
-                    MainMenu(self.game)
-                )
+                    from instinct.frontend.scenes.pause_scene import PauseScene
+
+                    self.game.scene_manager.change_scene(
+                        PauseScene(self.game, self)
+                    )
+                else:
+                    from instinct.frontend.scenes.main_menu import MainMenu
+
+                    self.game.scene_manager.change_scene(
+                        MainMenu(self.game)
+                    )
+
                 return
 
             if self.controller is None:

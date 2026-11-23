@@ -7,6 +7,7 @@ from instinct.frontend.menu.particle_system import ParticleSystem
 from instinct.frontend.scenes.base_scene import BaseScene
 from instinct.frontend.scenes.simulation_scene import SimulationScene
 from instinct.frontend.scenes.new_simulation import NewSimulationScene
+from instinct.frontend.scenes.settings_scene import SettingsScene
 
 class MenuButton:
     """Botón sencillo para el menú principal."""
@@ -151,7 +152,7 @@ class MainMenu(BaseScene):
             MenuButton(
                 "Configuración",
                 button_rect(3),
-                enabled=False,
+                callback=self._open_settings,
             ),
 
             MenuButton(
@@ -249,4 +250,10 @@ class MainMenu(BaseScene):
         screen.blit(
             version,
             (20, height - 30),
+        )
+    def _open_settings(self):
+        """Abre la pantalla de configuración."""
+
+        self.game.scene_manager.change_scene(
+            SettingsScene(self.game)
         )
