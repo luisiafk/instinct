@@ -1,5 +1,5 @@
-
 from pathlib import Path
+from copy import deepcopy
 import random
 
 import pygame
@@ -33,8 +33,12 @@ from instinct.frontend.interface.tile_info_panel import TileInfoPanel
 class SimulationScene(BaseScene):
     """Escena principal de visualización y control del mundo."""
 
-    def __init__(self, game):
+    def __init__(self, game, resource_manager=None, map_name=None, creature_counts=None):
         super().__init__(game)
+
+        self.resource_manager = resource_manager
+        self.selected_map_name = map_name
+        self.creature_counts = creature_counts or {}
 
         self.resource_manager = None
         self.simulation = None
@@ -78,16 +82,17 @@ class SimulationScene(BaseScene):
         self._update_layout()
 
     def _load_resources(self):
-        """Carga los recursos y prepara el primer mapa disponible."""
+        """Carga recursos si es necesario y prepara el mapa seleccionado."""
 
-        project_root = Path(__file__).resolve().parents[4]
-        resources_path = project_root / "resources"
+        if self.resource_manager is None:
+            project_root = Path(__file__).resolve().parents[4]
+            resources_path = project_root / "resources"
 
-        self.resource_manager = ResourceManager(
-            resource_dir=resources_path,
-        )
+            self.resource_manager = ResourceManager(
+                resource_dir=resources_path,
+            )
 
-        self.resource_manager.load_all()
+            self.resource_manager.load_all()
 
         if not self.resource_manager.maps:
             self.error_message = (
@@ -95,9 +100,16 @@ class SimulationScene(BaseScene):
             )
             return
 
-        self.map_name = next(iter(self.resource_manager.maps))
+        map_name = self.selected_map_name
 
-        self._load_map(self.map_name)
+        if map_name not in self.resource_manager.maps:
+            self.error_message = (
+                f"No se encontró el mapa '{map_name}'."
+            )
+            return
+
+        self.map_name = map_name
+        self._load_map(map_name)
 
     def _load_map(self, map_name):
         """Inicializa una simulación utilizando un mapa existente."""
@@ -110,7 +122,7 @@ class SimulationScene(BaseScene):
             )
             return
 
-        self.world = world
+        self.world = deepcopy(world)
 
         # Colocar las criaturas antes de iniciar la simulación.
         self._place_initial_creatures()
@@ -142,17 +154,11 @@ class SimulationScene(BaseScene):
         self.error_message = None
 
     def _place_initial_creatures(self):
-        """Coloca las criaturas iniciales en posiciones aleatorias."""
+        """Coloca la población configurada por el usuario."""
 
-        creature_names = (
-            "Naruto",
-            "Sasuke",
-            "Madara",
-            "Obito",
-        )
-
-        for creature_name in creature_names:
-            self._place_creature_randomly(creature_name)
+        for creature_name, count in self.creature_counts.items():
+            for _ in range(count):
+                self._place_creature_randomly(creature_name)
 
     def _place_creature_randomly(self, creature_name):
         """Crea una criatura y la coloca en una casilla libre aleatoria."""
