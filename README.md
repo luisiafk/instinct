@@ -1,174 +1,235 @@
 # Instinct
 
-**Instinct** es un entorno de simulación de criaturas autónomas controladas mediante un lenguaje de dominio específico (DSL) propio. Cada criatura ejecuta un programa que determina cómo percibe el entorno y cómo actúa dentro de un mundo organizado en una cuadrícula.
+**Instinct** es un simulador de ecosistemas de criaturas autónomas programadas mediante un lenguaje de dominio específico (DSL) propio. Cada criatura ejecuta un programa que determina su comportamiento, percepción del entorno e interacción con otras entidades dentro de un mundo dinámico basado en cuadrículas.
 
-El proyecto combina un compilador desarrollado desde cero, un entorno de ejecución, un motor de simulación por turnos y una interfaz gráfica construida con **Python y Pygame CE**.
+El proyecto integra un compilador, un entorno de ejecución, un motor de simulación y una interfaz gráfica interactiva desarrollados con Python.
 
-> **Estado del proyecto:** en desarrollo activo. El compilador, el runtime y el motor de simulación están implementados. La aplicación gráfica ya integra mundo, criaturas, animaciones, cámara y HUD; la auditoría de integración visual está identificando los últimos ajustes pendientes.
+---
 
-## Contenido
+## Características principales
 
-- [Instinct](#instinct)
-  - [Contenido](#contenido)
-  - [Características](#características)
-    - [Lenguaje Instinct](#lenguaje-instinct)
-    - [Motor de simulación](#motor-de-simulación)
-    - [Interfaz gráfica](#interfaz-gráfica)
-  - [Arquitectura](#arquitectura)
-    - [Responsabilidades principales](#responsabilidades-principales)
-  - [Tecnologías](#tecnologías)
-  - [Instalación](#instalación)
-  - [Ejecución](#ejecución)
-  - [Recursos del mundo](#recursos-del-mundo)
-    - [Ejemplo de terreno](#ejemplo-de-terreno)
-    - [Ejemplo de objeto](#ejemplo-de-objeto)
-    - [Mapas](#mapas)
-  - [Pruebas y calidad](#pruebas-y-calidad)
-  - [Documentación y seguimiento](#documentación-y-seguimiento)
+### Lenguaje de programación Instinct
 
-## Características
+Instinct incorpora un lenguaje propio diseñado para definir comportamientos autónomos.
 
-### Lenguaje Instinct
+- Análisis léxico y sintáctico.
+- Construcción de árboles de sintaxis abstracta (AST).
+- Análisis semántico.
+- Compilación y ejecución de programas.
+- Variables, expresiones y estructuras de control.
+- Instrucciones condicionales y saltos mediante etiquetas.
+- Acciones y percepciones integradas con el mundo.
+- Contexto de ejecución independiente para cada criatura.
 
-- Lenguaje DSL propio para definir el comportamiento de las criaturas.
-- Análisis léxico, sintáctico y semántico.
-- Construcción y evaluación de un árbol de sintaxis abstracta (AST).
-- Ejecución de instrucciones, condiciones, funciones y acciones mediante el runtime.
+Los comportamientos se definen mediante archivos `.ins`, lo que permite crear y modificar especies sin implementar su lógica directamente en Python.
 
-### Motor de simulación
+### Simulación de ecosistemas
 
-- Mundo basado en una cuadrícula de casillas.
-- Entidades diferenciadas: criaturas, terrenos y objetos.
-- Sistema de acciones y percepciones para interactuar con el entorno.
-- Simulación organizada en ticks y orden de ejecución administrado por turnos.
-- Registro de eventos y aplicación de reglas naturales del mundo.
+El motor administra un mundo en el que las criaturas interactúan de forma autónoma.
+
+- Mundo organizado en una cuadrícula.
+- Sistema de turnos y ticks.
+- Ejecución independiente de programas.
+- Movimiento y exploración.
+- Combate y daño.
+- Consumo de recursos.
+- Reproducción.
+- Interacción entre aliados y enemigos.
+- Percepciones locales y globales.
+- Regeneración de recursos y leyes naturales.
+- Registro de eventos de simulación.
+
+### Mundo y recursos configurables
+
+El mundo se construye mediante archivos externos que permiten incorporar nuevos elementos sin modificar el motor.
+
+- Terrenos con propiedades de regeneración y transitabilidad.
+- Objetos con propiedades independientes de consumo y destrucción.
+- Edificios con huellas lógicas y dimensiones visuales.
+- Mapas configurables mediante archivos de texto.
+- Capas complementarias para edificios.
+- Cargadores y validación de recursos.
 
 ### Interfaz gráfica
 
-- Aplicación gráfica desarrollada con Pygame CE.
-- Menú principal y escena de simulación.
-- Renderizado de terrenos, objetos y criaturas.
-- Cámara con zoom, desplazamiento y seguimiento de criatura seleccionada.
-- Interpolación visual de movimiento vinculada a eventos del motor.
-- Máquina de estados de animación independiente por criatura.
-- Paneles de información, controles de simulación y registro de eventos.
+La aplicación utiliza **Pygame CE** para visualizar y controlar las simulaciones.
 
-La interfaz representa visualmente el estado del motor; la lógica de comportamiento y las reglas de simulación pertenecen al núcleo del proyecto.
+Incluye:
+
+- Menú principal.
+- Configuración de nuevas simulaciones.
+- Selección de mapas y especies.
+- Configuración de cantidades iniciales por especie.
+- Renderizado del mundo y sus entidades.
+- Cámara con desplazamiento, zoom y seguimiento.
+- Movimiento visual interpolado.
+- Sistema de animaciones por criatura.
+- Panel de información y estadísticas.
+- Registro de eventos.
+- Controles de velocidad, pausa y avance manual.
+- Sistema de ventanas superpuestas y herramientas de inspección.
+- Sistema de temas visuales.
+
+La interfaz mantiene separada la representación gráfica de la lógica del motor de simulación.
+
+---
 
 ## Arquitectura
 
-El código fuente se organiza como un paquete Python dentro de `src/instinct/`.
+El proyecto utiliza una arquitectura modular en la que cada componente tiene responsabilidades específicas.
 
 ```text
 instinct/
 ├── resources/
-│   ├── creatures/       # Programas de criaturas (.ins)
-│   ├── maps/            # Definiciones de mapas (.map)
-│   ├── objects/         # Definiciones de objetos (.ob)
-│   └── terrains/        # Definiciones de terrenos (.te)
+│   ├── creatures/          # Programas de criaturas (.ins)
+│   ├── terrains/           # Definiciones de terrenos (.te)
+│   ├── objects/            # Definiciones de objetos (.ob)
+│   ├── buildings/          # Definiciones de edificios (.bld)
+│   └── maps/               # Mapas y capas de edificios
+│
 ├── docs/
-│   ├── instinct.pdf     # Documento de orientación del proyecto
-│   └── PROGRESS.md      # Seguimiento del desarrollo
+│   ├── instinct.pdf        # Documento de orientación
+│   └── PROGRESS.md         # Seguimiento del desarrollo
+│
 ├── src/
 │   └── instinct/
-│       ├── actions/     # Acciones disponibles para las criaturas
-│       ├── backend/     # Lexer, parser, AST y análisis semántico
-│       ├── engine/      # Simulación, turnos, leyes y eventos
-│       ├── frontend/    # Interfaz gráfica, escenas y renderizado
-│       ├── functions/   # Funciones y operaciones registradas
-│       ├── loaders/     # Carga y validación de recursos
-│       ├── perceptions/ # Sensores y percepciones del entorno
-│       ├── runtime/     # Entorno de ejecución e intérprete
-│       ├── world/       # Entidades, casillas y cuadrícula
-│       └── main.py      # Punto de entrada compatible
-├── tests/               # Pruebas automatizadas
-├── pyproject.toml       # Configuración y dependencias
+│       ├── actions/        # Acciones de las criaturas
+│       ├── backend/        # Lexer, parser, AST y compilador
+│       ├── engine/         # Motor de simulación y turnos
+│       ├── frontend/       # Interfaz gráfica
+│       ├── functions/      # Funciones del lenguaje
+│       ├── loaders/        # Cargadores de recursos
+│       ├── perceptions/    # Sistema de percepciones
+│       ├── runtime/        # Intérprete y ejecución
+│       ├── world/          # Entidades y cuadrícula
+│       └── main.py
+│
+├── tests/                  # Pruebas automatizadas
+├── pyproject.toml
 ├── uv.lock
 └── README.md
 ```
 
-### Responsabilidades principales
+### Responsabilidades de los módulos
 
 | Módulo | Responsabilidad |
-
 |---|---|
-| `backend` | Convierte el código Instinct en una representación ejecutable y valida su estructura y semántica. |
-| `runtime` | Ejecuta los programas y administra su contexto de ejecución. |
-| `actions` | Define las acciones que las criaturas pueden realizar. |
-| `perceptions` | Proporciona información del entorno y de la propia criatura. |
-| `world` | Modela las entidades y la estructura espacial del mundo. |
-| `engine` | Coordina los ticks, el orden de ejecución, las reglas naturales y los eventos. |
-| `loaders` | Lee y valida las definiciones externas de criaturas, terrenos, objetos y mapas. |
-| `frontend` | Presenta el mundo y sus estados mediante la interfaz gráfica. |
+| `backend` | Analiza, valida y compila los programas Instinct. |
+| `runtime` | Ejecuta los programas y administra sus contextos. |
+| `actions` | Implementa las acciones disponibles para las criaturas. |
+| `functions` | Registra las funciones utilizadas por el lenguaje. |
+| `perceptions` | Proporciona información del mundo y de las criaturas. |
+| `world` | Define las entidades y la estructura espacial. |
+| `engine` | Coordina los turnos, ticks, eventos y leyes naturales. |
+| `loaders` | Carga y valida las definiciones externas. |
+| `frontend` | Gestiona la interfaz, escenas, cámara, animaciones y renderizado. |
+
+---
 
 ## Tecnologías
 
-- **Python 3.13 o superior**
-- **Pygame CE** para la interfaz gráfica.
-- **uv** para la gestión del entorno y las dependencias.
-- **pytest** para las pruebas automatizadas.
-- **Ruff** para linting.
-- **Mypy** para comprobación estática de tipos.
+| Tecnología | Uso |
+|---|---|
+| Python 3.13+ | Lenguaje principal. |
+| Pygame CE | Interfaz gráfica y renderizado. |
+| uv | Gestión de dependencias y entorno. |
+| pytest | Pruebas automatizadas. |
+| Ruff | Análisis y calidad del código. |
+| Mypy | Comprobación estática de tipos. |
+
+---
 
 ## Instalación
 
-Instala Python 3.13 o una versión compatible y [uv](https://docs.astral.sh/uv/).
+### Requisitos
 
-Clona el repositorio:
+- Python 3.13 o superior.
+- [uv](https://docs.astral.sh/uv/).
+- Git.
+
+### Clonar el repositorio
 
 ```bash
 git clone https://github.com/luisiafk/instinct.git
 cd instinct
 ```
 
-Crea y sincroniza el entorno:
+### Instalar dependencias
 
 ```bash
 uv sync
 ```
 
+---
+
 ## Ejecución
 
-Desde la raíz del repositorio, cualquiera de estos comandos inicia la aplicación:
+Para iniciar la aplicación gráfica:
 
 ```bash
 uv run python -m instinct.frontend.app
 ```
 
-También está disponible el comando instalado por el proyecto:
+También se puede utilizar el punto de entrada del proyecto:
 
 ```bash
 uv run instinct
 ```
 
-Ambas formas de arranque fueron comprobadas y conducen al menú principal de la aplicación.
+Ambos comandos permiten iniciar Instinct desde el entorno administrado por uv.
+
+---
 
 ## Recursos del mundo
 
-Los recursos de la simulación se definen mediante archivos de texto ubicados en `resources/`.
+Los recursos se definen mediante archivos de texto que se cargan al iniciar la aplicación o preparar una simulación.
 
-| Extensión | Recurso | Ubicación |
-
+| Extensión | Tipo | Directorio |
 |---|---|---|
-| `.ins` | Programa y comportamiento de una criatura | `resources/creatures/` |
-| `.te` | Definición de un terreno | `resources/terrains/` |
-| `.ob` | Definición de un objeto | `resources/objects/` |
-| `.map` | Distribución de casillas del mapa | `resources/maps/` |
+| `.ins` | Programa de criatura | `resources/creatures/` |
+| `.te` | Terreno | `resources/terrains/` |
+| `.ob` | Objeto | `resources/objects/` |
+| `.bld` | Edificio | `resources/buildings/` |
+| `.map` | Mapa | `resources/maps/` |
+| `.bmap` | Capa de edificios | `resources/maps/` |
 
-### Ejemplo de terreno
+### Programas de criaturas
 
-Archivo `resources/terrains/grass.te`:
+Los archivos `.ins` contienen las características y el comportamiento de cada criatura.
+
+Cada criatura tiene su propio programa y contexto de ejecución, lo que permite que múltiples individuos de una misma especie ejecuten comportamientos independientes.
+
+### Terrenos
+
+Los archivos `.te` definen las características de los terrenos, incluyendo:
+
+- Carácter identificador.
+- Reserva máxima.
+- Regeneración.
+- Transitabilidad.
+
+Ejemplo:
 
 ```text
 terrain Grass
 char .
 resource_max 100
 regen 2
+walkable true
 ```
 
-### Ejemplo de objeto
+### Objetos
 
-Archivo `resources/objects/rock.ob`:
+Los archivos `.ob` definen los objetos que pueden aparecer en el mundo.
+
+Entre sus propiedades se encuentran:
+
+- Carácter identificador.
+- Reserva máxima.
+- Consumibilidad.
+- Destructibilidad.
+
+Ejemplo:
 
 ```text
 object Rock
@@ -178,43 +239,117 @@ consumable false
 destructible false
 ```
 
+### Edificios
+
+Los archivos `.bld` permiten definir estructuras que ocupan una o varias casillas.
+
+Admiten:
+
+- Dimensiones lógicas.
+- Matriz de transitabilidad.
+- Recursos gráficos.
+- Dimensiones visuales independientes de la huella lógica.
+
+Esto permite representar edificios grandes sin alterar innecesariamente la distribución lógica del mundo.
+
 ### Mapas
 
-Un archivo `.map` utiliza caracteres para referenciar los terrenos y objetos registrados. La primera línea identifica el mapa y las siguientes representan sus filas. Las filas deben mantener el mismo ancho.
+Los archivos `.map` definen la distribución del terreno y los objetos mediante caracteres.
 
-Las criaturas se incorporan a la simulación por separado; no forman parte de la matriz de caracteres del mapa.
+Los archivos `.bmap` permiten añadir una capa independiente de edificios, conservando intacto el mapa original.
 
-Los nombres, campos y caracteres de los recursos deben respetar las definiciones y validaciones del cargador correspondiente.
+---
+
+## Sistema de animaciones
+
+Las criaturas disponen de un sistema de estados visuales independiente de la lógica de simulación.
+
+Los estados contemplados incluyen:
+
+- `IDLE`
+- `WALK`
+- `RUN`
+- `ATTACK`
+- `HURT`
+- `DEATH`
+- `ROAR`
+- `CONSUME`
+- `REPRODUCE`
+
+El sistema utiliza eventos del motor para actualizar las animaciones y mantiene una máquina de estados por instancia de criatura.
+
+Las animaciones se configuran por especie y utilizan spritesheets independientes.
+
+### Organización de recursos gráficos
+
+Los recursos se organizan dentro de la carpeta correspondiente a cada criatura, separando las animaciones cuando sea necesario.
+
+Los tiles del mundo utilizan imágenes PNG RGBA de 32×32 píxeles y las spritesheets utilizan frames de 64×64 píxeles.
+
+---
+
+## Interfaz de simulación
+
+La interfaz permite controlar y observar el comportamiento del ecosistema.
+
+Entre sus herramientas se encuentran:
+
+- Selección e inspección de criaturas.
+- Visualización de estadísticas.
+- Información contextual de casillas y entidades.
+- Registro de eventos.
+- Control de velocidad de simulación.
+- Pausa y reanudación.
+- Avance manual por ticks.
+- Cámara con zoom y seguimiento.
+- Ventanas de inspección y visualización de código.
+
+La simulación y el renderizado funcionan de forma independiente: los ticks controlan la lógica del mundo, mientras que el frontend actualiza su representación visual.
+
+---
 
 ## Pruebas y calidad
 
-Ejecuta la suite completa:
+Instinct incorpora pruebas automatizadas para validar sus componentes y reducir regresiones durante el desarrollo.
+
+Ejecutar la suite completa:
 
 ```bash
 uv run pytest -q
 ```
 
-Ejecuta Ruff:
+Ejecutar Ruff:
 
 ```bash
 uv run ruff check src tests
 ```
 
-Ejecuta Mypy:
+Ejecutar Mypy:
 
 ```bash
 uv run mypy src
 ```
 
-**Última verificación comunicada:** 30 pruebas aprobadas, Ruff sin errores y Mypy sin errores en 107 archivos fuente. Estos resultados corresponden a la última ejecución reportada durante el desarrollo; conviene repetir los tres comandos después de nuevos cambios.
+---
 
-## Documentación y seguimiento
+## Documentación
 
-- **[Seguimiento del desarrollo](docs/PROGRESS.md):** funcionalidades completadas, auditorías, hallazgos y tareas pendientes.
-- **[Documento de orientación](docs/instinct.pdf):** referencia general del proyecto.
+La documentación del proyecto se divide según su propósito:
 
-El tracker es el documento de referencia para el estado técnico y el orden de trabajo. Este README se centra en explicar el proyecto, su arquitectura y cómo ejecutarlo.
+- **README.md:** descripción general, arquitectura, tecnologías e instrucciones de instalación y ejecución.
+- **docs/PROGRESS.md:** seguimiento del desarrollo, funcionalidades implementadas, tareas pendientes y prioridades.
+- **docs/instinct.pdf:** documento de orientación y referencia del proyecto.
+
+El seguimiento técnico debe mantenerse actualizado en `docs/PROGRESS.md`, sin convertir el README en una lista de tareas.
 
 ---
 
-Desarrollado con Python, curiosidad y mucho Instinct.
+## Objetivo del proyecto
+
+Instinct busca proporcionar un entorno extensible de simulación de vida artificial en el que los comportamientos de las criaturas puedan definirse mediante un lenguaje propio.
+
+La arquitectura modular permite incorporar nuevas especies, comportamientos, acciones, percepciones, terrenos, objetos, edificios y mapas, manteniendo separadas la lógica de simulación y su representación gráfica.
+
+---
+
+**Instinct — Un mundo. Múltiples criaturas. Comportamientos autónomos.**
