@@ -12,6 +12,11 @@ class Environment:
     def __init__(self) -> None:
         self._variables: dict[str, int | str] = {}
 
+    @property
+    def variables(self) -> dict[str, int | str]:
+        """Devuelve una copia de las variables almacenadas."""
+        return self._variables.copy()
+
     def set_variable(self, name: str, value: int | str) -> None:
         """Crea o actualiza una variable."""
 

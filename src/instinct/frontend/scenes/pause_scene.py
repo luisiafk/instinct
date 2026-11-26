@@ -46,6 +46,12 @@ class PauseScene(BaseScene):
             ),
             Button(
                 (0, 0, 100, 50),
+                "Guardar mundo",
+                callback=self._save_world,
+                font_size=32,
+            ),
+            Button(
+                (0, 0, 100, 50),
                 "Reiniciar",
                 callback=self._restart,
                 font_size=32,
@@ -248,3 +254,18 @@ class PauseScene(BaseScene):
         # Botones.
         for button in self.buttons:
             button.draw(screen)
+
+
+    def _save_world(self):
+        """Abre la ventana de guardado de la simulación actual."""
+
+        from instinct.frontend.windows.save_world_window import (
+            SaveWorldWindow,
+        )
+
+        self.game.window_manager.open(
+            SaveWorldWindow(
+                self.game,
+                self.simulation_scene,
+            )
+        )

@@ -10,6 +10,8 @@ from instinct.frontend.settings import DEFAULT_TILE_SIZE
 from instinct.loaders.resource_manager import ResourceManager
 from instinct.engine.simulation import Simulation
 
+from instinct.world.entities import Creature
+
 from instinct.frontend.core.simulation_controller import (
     SimulationController,
 )
@@ -35,12 +37,13 @@ from instinct.frontend.windows.code_windows import CodeWindows
 class SimulationScene(BaseScene):
     """Escena principal de visualización y control del mundo."""
 
-    def __init__(self, game, resource_manager=None, map_name=None, creature_counts=None):
+    def __init__(self, game, resource_manager=None, map_name=None, creature_counts=None, saved_data=None,):
         super().__init__(game)
 
         self.resource_manager = resource_manager
         self.selected_map_name = map_name
         self.creature_counts = creature_counts or {}
+        self.saved_data = saved_data
 
         self.simulation = None
         self.controller = None
@@ -83,7 +86,13 @@ class SimulationScene(BaseScene):
         self.tile_info_panel = TileInfoPanel()
 
         self._load_resources()
-        self._update_layout()
+
+        # Si venimos de un guardado, recuperamos el mundo después de cargar
+        # sus recursos originales.
+        if self.saved_data is not None and self.simulation is not None:
+            self._restore_saved_state(self.saved_data)
+
+            self._update_layout()
 
     def _load_resources(self):
         """Carga recursos si es necesario y prepara el mapa seleccionado."""
@@ -157,6 +166,174 @@ class SimulationScene(BaseScene):
         self.selection.clear()
         self.error_message = None
 
+    def _restore_saved_state(self, data):
+        """Reconstruye el mundo y el estado de ejecución desde un guardado."""
+
+        world_data = data["world"]
+
+        if (
+            world_data["width"] != self.world.width
+            or world_data["height"] != self.world.height
+        ):
+            raise ValueError(
+                "Las dimensiones del mundo guardado no coinciden con el mapa."
+            )
+
+        saved_tiles = world_data["tiles"]
+
+        if len(saved_tiles) != self.world.height:
+            raise ValueError("El contenido del mapa guardado no es válido.")
+
+        # Primero restauramos las casillas y retiramos los elementos
+        # que pertenecían a la instancia original del mapa.
+        for y, row in enumerate(saved_tiles):
+            if len(row) != self.world.width:
+                raise ValueError("Una fila del mapa guardado tiene dimensiones incorrectas.")
+
+            for x, tile_data in enumerate(row):
+                tile = self.world.get_tile(x, y)
+
+                terrain_data = tile_data["terrain"]
+
+                if isinstance(terrain_data, str):
+                    terrain_name = terrain_data
+                    terrain_reserve = tile_data.get("terrain_reserve")
+                else:
+                    terrain_name = terrain_data["name"]
+                    terrain_reserve = terrain_data["reserve"]
+
+                terrain_template = self.resource_manager.get_terrain(
+                    terrain_name
+                )
+
+                if terrain_template is None:
+                    raise ValueError(
+                        f"No se encontró el terreno '{terrain_name}'."
+                    )
+
+                tile.terrain = deepcopy(terrain_template)
+
+                if terrain_reserve is not None:
+                    tile.terrain.reserve = terrain_reserve
+
+                tile.remove_object()
+                tile.remove_creature()
+
+                # Eliminamos las referencias del edificio anterior.
+                tile.building = None
+                tile.building_offset = None
+
+        # Los edificios se reconstruyen como instancias compartidas
+        # por todas las casillas de su huella.
+        for building_data in world_data.get("buildings", []):
+            building_template = self.resource_manager.get_building(
+                building_data["name"]
+            )
+
+            if building_template is None:
+                raise ValueError(
+                    f"No se encontró el edificio '{building_data['name']}'."
+                )
+
+            building = deepcopy(building_template)
+
+            self.world.place_building(
+                building,
+                building_data["x"],
+                building_data["y"],
+            )
+
+        # Recuperamos los objetos después de los edificios para evitar
+        # colocar objetos en casillas que pertenecen a sus estructuras.
+        for y, row in enumerate(saved_tiles):
+            for x, tile_data in enumerate(row):
+                object_data = tile_data.get("object")
+
+                if object_data is None:
+                    continue
+
+                object_template = self.resource_manager.get_object(
+                    object_data["name"]
+                )
+
+                if object_template is None:
+                    raise ValueError(
+                        f"No se encontró el objeto '{object_data['name']}'."
+                    )
+
+                obj = deepcopy(object_template)
+                obj.reserve = object_data["reserve"]
+
+                self.world.place_object(obj, x, y)
+
+        # Las criaturas se reconstruyen con sus programas originales.
+        for creature_data in world_data.get("creatures", []):
+            creature_template = self.resource_manager.create_creature(
+                creature_data["name"]
+            )
+
+            if creature_template is None:
+                raise ValueError(
+                    f"No se encontró el programa de "
+                    f"'{creature_data['name']}'."
+                )
+
+            creature = Creature(
+                name=creature_data["name"],
+                faction=creature_data["faction"],
+                health=creature_data["health"],
+                vision=creature_data["vision"],
+                lifespan=creature_data["lifespan"],
+                x=creature_data["x"],
+                y=creature_data["y"],
+                age=creature_data["age"],
+                program=creature_template.program,
+                max_health=creature_data.get(
+                    "max_health",
+                    creature_data["health"],
+                ),
+                can_reproduce=creature_data.get(
+                    "can_reproduce",
+                    True,
+                ),
+            )
+
+            self.world.place_creature(
+                creature,
+                creature.x,
+                creature.y,
+            )
+
+            execution_state = creature_data.get("execution_state")
+
+            if execution_state is not None:
+                self.simulation.restore_execution_state(
+                    creature,
+                    execution_state,
+                )
+
+        # El tiempo y la secuencia aleatoria también forman parte
+        # del estado de la simulación.
+        self.simulation.tick = data["tick"]
+
+        def restore_tuple(value):
+            if isinstance(value, list):
+                return tuple(restore_tuple(item) for item in value)
+
+            return value
+
+        self.simulation.rng.setstate(
+            restore_tuple(data["rng_state"])
+        )
+
+        saved_speed = data.get("speed", 1)
+
+        self.controller.set_speed(saved_speed)
+        self.controller.pause()
+
+        self.selection.clear()
+        self.error_message = None
+    
     def _place_initial_creatures(self):
         """Coloca la población configurada por el usuario."""
 

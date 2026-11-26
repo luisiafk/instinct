@@ -127,6 +127,78 @@ class Simulation:
 
         return self._last_executed_lines.get(id(creature))
 
+    def restore_execution_state(
+        self,
+        creature: Creature,
+        state: dict,
+    ) -> None:
+        """Recupera el punto de ejecución y las variables de una criatura."""
+
+        if not isinstance(state, dict):
+            raise TypeError("El estado de ejecución no es válido.")
+
+        context = self._get_execution_context(creature)
+
+        instruction_pointer = state["instruction_pointer"]
+        last_line = state.get("last_executed_line")
+        wait_turns = state["wait_turns"]
+        current_tick = state["current_tick"]
+        variables = state.get("variables", {})
+
+        if (
+            not isinstance(instruction_pointer, int)
+            or isinstance(instruction_pointer, bool)
+            or not 0 <= instruction_pointer <= len(context.program)
+        ):
+            raise ValueError("La posición de ejecución guardada no es válida.")
+
+        if (
+            not isinstance(wait_turns, int)
+            or isinstance(wait_turns, bool)
+            or wait_turns < 0
+        ):
+            raise ValueError("El estado de espera guardado no es válido.")
+
+        if (
+            not isinstance(current_tick, int)
+            or isinstance(current_tick, bool)
+            or current_tick < 0
+        ):
+            raise ValueError("El tick del contexto no es válido.")
+
+        if not isinstance(variables, dict):
+            raise ValueError("Las variables guardadas no son válidas.")
+
+        context.instruction_pointer = instruction_pointer
+        context.last_executed_line = last_line
+        context.wait_turns = wait_turns
+        context.current_tick = current_tick
+
+        for name, value in variables.items():
+            context.environment.set_variable(name, value)
+
+        if last_line is not None:
+            self._last_executed_lines[id(creature)] = last_line
+
+    def get_execution_state(
+        self,
+        creature: Creature,
+    ) -> dict | None:
+        """Obtiene el estado necesario para continuar el programa de una criatura."""
+
+        context = self._contexts.get(id(creature))
+
+        if context is None:
+            return None
+
+        return {
+            "instruction_pointer": context.instruction_pointer,
+            "last_executed_line": context.last_executed_line,
+            "wait_turns": context.wait_turns,
+            "current_tick": context.current_tick,
+            "variables": context.environment.variables,
+        }
+    
     def _cleanup_contexts(self) -> None:
         """Elimina los contextos de criaturas que ya no están en el mundo."""
 

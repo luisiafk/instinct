@@ -140,13 +140,13 @@ class MainMenu(BaseScene):
             MenuButton(
                 "Cargar mundo",
                 button_rect(1),
-                enabled=False,
+                callback=self._open_load_world,
             ),
 
             MenuButton(
                 "Mundos recientes",
                 button_rect(2),
-                enabled=False,
+                callback=self._open_recent_worlds,
             ),
 
             MenuButton(
@@ -256,4 +256,29 @@ class MainMenu(BaseScene):
 
         self.game.scene_manager.change_scene(
             SettingsScene(self.game)
+        )
+
+    def _open_load_world(self):
+        """Abre la lista de mundos guardados."""
+
+        from instinct.frontend.windows.load_world_window import (
+            LoadWorldWindow,
+        )
+
+        self.game.window_manager.open(
+            LoadWorldWindow(self.game)
+        )
+
+    def _open_recent_worlds(self):
+        """Muestra los cinco guardados más recientes."""
+
+        from instinct.frontend.windows.load_world_window import (
+            LoadWorldWindow,
+        )
+
+        self.game.window_manager.open(
+            LoadWorldWindow(
+                self.game,
+                recent_only=True,
+            )
         )
