@@ -306,10 +306,7 @@ class ConsumeAction(Action):
             target_tile.remove_object()
 
         # La curación nunca puede superar la vida máxima de la criatura.
-        creature.health = min(
-            creature.max_health,
-            creature.health + heal,
-        )
+        creature.health += heal
 
         context.publish_action_event(
             "consume",
@@ -377,7 +374,6 @@ class ReproduceAction(Action):
             y=target_y,
             age=0,
             program=context.program,
-            max_health=mother.max_health,
             can_reproduce=False
         )
 

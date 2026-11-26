@@ -9,6 +9,7 @@ from instinct.frontend.scenes.simulation_scene import SimulationScene
 from instinct.frontend.scenes.new_simulation import NewSimulationScene
 from instinct.frontend.scenes.settings_scene import SettingsScene
 
+
 class MenuButton:
     """Botón sencillo para el menú principal."""
 
@@ -257,18 +258,16 @@ class MainMenu(BaseScene):
         self.game.scene_manager.change_scene(
             SettingsScene(self.game)
         )
-
     def _open_load_world(self):
-        """Abre la lista de mundos guardados."""
+        """Abre el selector de mapas para crear una simulación nueva."""
 
-        from instinct.frontend.windows.load_world_window import (
-            LoadWorldWindow,
+        from instinct.frontend.windows.load_map_window import (
+            LoadMapWindow,
         )
 
         self.game.window_manager.open(
-            LoadWorldWindow(self.game)
+            LoadMapWindow(self.game)
         )
-
     def _open_recent_worlds(self):
         """Muestra los cinco guardados más recientes."""
 

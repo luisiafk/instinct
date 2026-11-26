@@ -87,13 +87,13 @@ class SimulationScene(BaseScene):
 
         self._load_resources()
 
-        # Si venimos de un guardado, recuperamos el mundo después de cargar
-        # sus recursos originales.
         if self.saved_data is not None and self.simulation is not None:
             self._restore_saved_state(self.saved_data)
 
-            self._update_layout()
-
+        # La interfaz necesita calcular su distribución tanto
+        # al iniciar una partida como al recuperar una guardada.
+        self._update_layout()
+    
     def _load_resources(self):
         """Carga recursos si es necesario y prepara el mapa seleccionado."""
 
@@ -288,10 +288,6 @@ class SimulationScene(BaseScene):
                 y=creature_data["y"],
                 age=creature_data["age"],
                 program=creature_template.program,
-                max_health=creature_data.get(
-                    "max_health",
-                    creature_data["health"],
-                ),
                 can_reproduce=creature_data.get(
                     "can_reproduce",
                     True,
@@ -304,7 +300,12 @@ class SimulationScene(BaseScene):
                 creature.y,
             )
 
-            execution_state = creature_data.get("execution_state")
+           # Recuperamos el estado de ejecución guardado.
+            # La segunda clave permite leer archivos creados con el formato anterior.
+            execution_state = creature_data.get(
+                "execution_state",
+                creature_data.get("execution"),
+            )
 
             if execution_state is not None:
                 self.simulation.restore_execution_state(

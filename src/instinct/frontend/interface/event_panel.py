@@ -165,7 +165,7 @@ class EventPanel:
         )
 
         title = self.title_font.render(
-            "ACONTECIMIENTOS",
+            "EVENTOS",
             True,
             colors["gold"],
         )

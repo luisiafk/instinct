@@ -111,7 +111,6 @@ class WorldSaveManager:
                     "x": creature.x,
                     "y": creature.y,
                     "age": creature.age,
-                    "max_health": creature.max_health,
                     "can_reproduce": creature.can_reproduce,
                     "execution": simulation.get_execution_state(
                         creature

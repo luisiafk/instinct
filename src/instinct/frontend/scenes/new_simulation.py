@@ -23,10 +23,13 @@ class NewSimulationScene(BaseScene):
     MUTED = (155, 150, 174)
     DISABLED = (75, 72, 91)
 
-    def __init__(self, game):
+    def __init__(self, game, selected_map=None, resource_manager=None):
         super().__init__(game)
 
-        self.resource_manager = None
+        # Podemos recibir los recursos ya cargados desde el selector
+        # de mapas o cargarlos normalmente si venimos de Nueva simulación.
+        self.resource_manager = resource_manager
+        self.selected_map_name = selected_map
 
         self.maps = []
         self.map_index = 0
@@ -35,7 +38,6 @@ class NewSimulationScene(BaseScene):
         self.creature_counts = {}
 
         self.creature_scroll = 0
-
         self.error_message = None
 
         self.title_font = pygame.font.Font(None, 58)
@@ -47,13 +49,14 @@ class NewSimulationScene(BaseScene):
         self._load_resources()
 
     def _load_resources(self):
-        """Carga los recursos disponibles para configurar la partida."""
+        """Carga los recursos y selecciona el mapa inicial."""
 
-        project_root = Path(__file__).resolve().parents[4]
-        resources_path = project_root / "resources"
+        if self.resource_manager is None:
+            project_root = Path(__file__).resolve().parents[4]
+            resources_path = project_root / "resources"
 
-        self.resource_manager = ResourceManager(resources_path)
-        self.resource_manager.load_all()
+            self.resource_manager = ResourceManager(resources_path)
+            self.resource_manager.load_all()
 
         self.maps = sorted(self.resource_manager.maps.keys())
         creature_names = sorted(self.resource_manager.creatures.keys())
@@ -62,6 +65,10 @@ class NewSimulationScene(BaseScene):
             name: 1
             for name in creature_names
         }
+
+        # Si venimos de Cargar mundo, conservamos el mapa elegido.
+        if self.selected_map_name in self.maps:
+            self.map_index = self.maps.index(self.selected_map_name)
 
         if not self.maps:
             self.error_message = (

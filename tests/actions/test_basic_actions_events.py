@@ -18,8 +18,9 @@ from instinct.engine.action_event import ActionEventLog
 from instinct.engine.event_log import EventLog
 from instinct.runtime.execution_context import ExecutionContext
 from instinct.runtime.program import Program
-from instinct.world.entities import Creature, Terrain
+from instinct.world.entities import Creature, Terrain, WorldObject
 from instinct.world.world_grid import WorldGrid
+
 
 
 @pytest.fixture
@@ -238,10 +239,11 @@ def test_consume_publishes_event_and_heals_actor(simulation_context):
     assert events[0].actor_ref is actor
     assert events[1].target_ref is target
 
-def test_consume_cannot_exceed_maximum_health(simulation_context):
+def test_consume_can_exceed_initial_health_when_target_is_creature(
+    simulation_context,
+):
     data = simulation_context
     actor = data["creature"]
-
     actor.health = 90
 
     target = Creature(
@@ -258,7 +260,35 @@ def test_consume_cannot_exceed_maximum_health(simulation_context):
         [1, 0, 10, 22],
     )
 
-    assert actor.health == 100
+    # La curación se suma completa, aunque supere la vida inicial.
+    assert actor.health == 112
+    assert target.health == 40
+
+
+def test_consume_can_exceed_initial_health_when_target_is_object(
+    simulation_context,
+):
+    data = simulation_context
+    actor = data["creature"]
+    actor.health = 90
+
+    target_tile = data["world"].get_tile(2, 1)
+    target_tile.set_object(
+        WorldObject(
+            name="Manzana",
+            char="A",
+            resource_max=100,
+        )
+    )
+
+    ConsumeAction().execute(
+        data["context"],
+        [1, 0, 10, 22],
+    )
+
+    # También se aplica la curación completa al consumir un objeto.
+    assert actor.health == 112
+    assert target_tile.object.reserve == 90
 
 
 def test_consume_preserves_health_below_maximum(simulation_context):

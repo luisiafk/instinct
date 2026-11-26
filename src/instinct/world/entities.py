@@ -220,7 +220,6 @@ class Creature:
     y: int = 0
     age: int = 0
     program: "Program | None" = None
-    max_health: int = 0
     can_reproduce: bool = True
 
     def __post_init__(self) -> None:
@@ -254,21 +253,6 @@ class Creature:
 
         if self.age < 0:
             raise ValueError("La edad no puede ser negativa.")
-
-        # Guardamos la vida inicial como límite de recuperación.
-        if self.max_health == 0:
-            self.max_health = self.health
-        elif (
-            not isinstance(self.max_health, int)
-            or isinstance(self.max_health, bool)
-        ):
-            raise TypeError("La vida máxima debe ser un número entero.")
-
-        if self.max_health < self.health or self.max_health <= 0:
-            raise ValueError(
-                "La vida máxima debe ser positiva y no inferior "
-                "a la vida inicial."
-            )
 
         # La capacidad de reproducción debe ser un valor booleano.
         if not isinstance(self.can_reproduce, bool):

@@ -9,17 +9,6 @@ class SaveWorldWindow(BaseWindow):
     """Ventana para guardar el estado de la simulación actual."""
 
     def __init__(self, game, simulation_scene):
-        screen_width, screen_height = game.screen.get_size()
-
-        width = min(520, screen_width - 40)
-        height = 270
-
-        rect = (
-            (screen_width - width) // 2,
-            (screen_height - height) // 2,
-            width,
-            height,
-        )
 
         # Colocamos la ventana en el centro de la pantalla.
         window_rect = pygame.Rect(0, 0, 500, 300)
