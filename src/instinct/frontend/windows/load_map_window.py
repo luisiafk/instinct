@@ -47,7 +47,7 @@ class LoadMapWindow(BaseWindow):
             self.rect.x + 20,
             self.rect.y + 62,
             self.rect.width - 40,
-            self.rect.height - 85,
+            self.rect.height - 110,
         )
 
     def _visible_rows(self):

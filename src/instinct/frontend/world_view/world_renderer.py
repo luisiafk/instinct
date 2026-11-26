@@ -64,8 +64,18 @@ class WorldRenderer:
                 rect = self.camera.get_tile_rect(x, y)
 
                 self.biome_renderer.draw_tile(
+                screen,
+                tile,
+                rect,
+            )
+
+            # Las transiciones se dibujan sobre las casillas de agua.
+            if tile.terrain.name.lower() == "water":
+                self.biome_renderer.draw_shore(
                     screen,
-                    tile,
+                    self.world,
+                    x,
+                    y,
                     rect,
                 )
 

@@ -25,6 +25,7 @@ class BiomeRenderer:
     def __init__(self, asset_loader=None):
         self.asset_loader = asset_loader
         self.terrain_images = {}
+        self.shore_images = {}
 
     def get_terrain_color(self, terrain):
         """Obtiene el color provisional correspondiente al terreno."""
@@ -63,3 +64,70 @@ class BiomeRenderer:
                 self.get_terrain_color(terrain),
                 rect,
             )
+
+    def draw_shore(self, screen, world, x, y, rect):
+        """Dibuja la transición del agua hacia los terrenos vecinos."""
+
+        if self.asset_loader is None:
+            return
+
+        # Buscamos las casillas de tierra que rodean esta casilla de agua.
+        neighbors = {
+            "north": (x, y - 1),
+            "south": (x, y + 1),
+            "east": (x + 1, y),
+            "west": (x - 1, y),
+        }
+
+        land_neighbors = []
+
+        for direction, (nx, ny) in neighbors.items():
+            if not world.in_bounds(nx, ny):
+                continue
+
+            neighbor = world.get_tile(nx, ny)
+
+            if (
+                neighbor is not None
+                and neighbor.terrain.name.lower() != "water"
+            ):
+                land_neighbors.append(direction)
+
+        # Por ahora aplicamos una pieza recta solo cuando hay un único
+        # lado de tierra. Así evitamos superponer transiciones incompatibles.
+        if len(land_neighbors) != 1:
+            return
+
+        # El nombre indica hacia dónde queda orientada la parte de agua.
+        sprite_names = {
+            "north": "shore_north_edge",
+            "south": "shore_south_edge",
+            "east": "shore_east_edge",
+            "west": "shore_west_edge",
+        }
+
+        # La orilla se encuentra en el lado contrario al terreno vecino.
+        opposite = {
+            "north": "south",
+            "south": "north",
+            "east": "west",
+            "west": "east",
+        }
+
+        sprite_name = sprite_names[opposite[land_neighbors[0]]]
+        cache_key = (sprite_name, rect.size)
+
+        if cache_key not in self.shore_images:
+            image = self.asset_loader.load_image(
+                f"biomes/{sprite_name}.png"
+            )
+
+            if image is None:
+                return
+
+            if image.get_size() != rect.size:
+                image = pygame.transform.scale(image, rect.size)
+
+            self.shore_images[cache_key] = image
+
+        screen.blit(self.shore_images[cache_key], rect)

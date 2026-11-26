@@ -219,105 +219,43 @@ class ConsumeAction(Action):
         target_x = creature.x + dx
         target_y = creature.y + dy
 
+        # Fuera del mapa no existe ningún objetivo que consumir.
         if not world.in_bounds(target_x, target_y):
             return
 
         target_tile = world.get_tile(target_x, target_y)
 
-        if damage <= 0:
-            return
-
-        # Consumir una criatura enemiga.
-        target_creature = target_tile.creature
-
-        if target_creature is not None and target_creature is not creature:
-            target_creature.health -= damage
-            creature.health += heal
-
-            context.publish_action_event(
-                "consume",
-                data={
-                    "dx": dx,
-                    "dy": dy,
-                    "damage": damage,
-                    "heal": heal,
-                    "target": target_creature.name,
-                },
-            )
-
-            context.publish_action_event(
-                "damage",
-                target=target_creature,
-                data={
-                    "damage": damage,
-                    "remaining_health": target_creature.health,
-                },
-            )
-
-            if target_creature.health <= 0:
-                target_tile.remove_creature()
-
-                context.event_log.add(
-                    context.current_tick,
-                    (
-                        f"La criatura '{target_creature.name}' "
-                        f"ha muerto al ser consumida por "
-                        f"'{creature.name}'."
-                    ),
-                    "muerte",
-                )
-
-                context.publish_action_event(
-                    "death",
-                    target=target_creature,
-                    data={
-                        "cause": "consume",
-                        "damage": damage,
-                    },
-                )
-
-            return
-
-        # Mantener el consumo de objetos.
+        # Guardamos el objetivo antes de aplicar el daño, porque puede morir
+        # o desaparecer como consecuencia de la acción.
+        target_creature = (
+            target_tile.creature if (dx, dy) != (0, 0) else None
+        )
         target_object = target_tile.object
 
-        if target_object is None:
-            return
+        # Consume utiliza las mismas reglas de daño que attack.
+        AttackAction._attack_target(context, dx, dy, damage)
 
-        reserve = target_object.reserve or 0
-        target_object = target_tile.object
-
-        if target_object is None:
-            return
-
-        # Los objetos no consumibles no pueden ser ingeridos.
-        if not target_object.consumable:
-            return
-
-        reserve = target_object.reserve or 0
-
-        if reserve <= 0:
-            return
-
-        consumed = min(damage, reserve)
-        target_object.reserve = reserve - consumed
-
-        if target_object.reserve <= 0:
-            target_tile.remove_object()
-
-        # La curación nunca puede superar la vida máxima de la criatura.
+        # La curación no tiene un límite máximo establecido por el lenguaje.
         creature.health += heal
+
+        event_data = {
+            "dx": dx,
+            "dy": dy,
+            "damage": damage,
+            "heal": heal,
+        }
+
+        if target_creature is not None:
+            event_data["target"] = target_creature.name
+        elif target_object is not None:
+            event_data["object"] = target_object.name
+            event_data["remaining_reserve"] = target_object.reserve
+        else:
+            event_data["remaining_reserve"] = target_tile.terrain.reserve
 
         context.publish_action_event(
             "consume",
-            data={
-                "dx": dx,
-                "dy": dy,
-                "damage": consumed,
-                "heal": heal,
-                "object": target_object.name,
-                "remaining_reserve": target_object.reserve,
-            },
+            data=event_data,
         )
 
 

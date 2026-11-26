@@ -1,5 +1,5 @@
 terrain Water
 char ~
-resource_max 100
+resource_max 0
 regen 0
-walkable true
+walkable false
