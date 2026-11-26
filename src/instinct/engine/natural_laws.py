@@ -122,6 +122,13 @@ class NaturalLaws:
                 creature.age += 1
 
                 if creature.health <= 0:
+                    # Avisamos al sistema visual antes de retirar la criatura del mundo.
+                    action_event_log.publish(
+                        tick=tick,
+                        event_type="death",
+                        actor=creature,
+                    )
+
                     tile.remove_creature()
 
                     event_log.add(

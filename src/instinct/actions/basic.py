@@ -342,11 +342,8 @@ class ReproduceAction(Action):
         self.require_direction(dx, dy, self.name)
 
         if dx == 0 and dy == 0:
-            raise RuntimeError(
-                "Error de ejecución: reproduce requiere una casilla "
-                "adyacente distinta de la posición de la madre."
-            )
-
+            return
+        
         if child_health <= 0:
             return
 

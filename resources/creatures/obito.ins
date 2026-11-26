@@ -12,6 +12,7 @@ start:
     if enemy_dist > 1 goto stalk
     if consumable_dist == 1 goto consume_resource
     if consumable_dist > 1 goto approach_resource
+    if health >= 100 goto reproduce_check
     goto observe
 
 assess:
@@ -39,6 +40,50 @@ consume_resource:
 
 approach_resource:
     move(consumable_dx, consumable_dy, 1)
+    goto start
+
+# Obito solo se reproduce cuando no necesita esconderse ni combatir.
+reproduce_check:
+    if see(1, 0) == GROUND goto reproduce_right
+    if see(-1, 0) == GROUND goto reproduce_left
+    if see(0, 1) == GROUND goto reproduce_down
+    if see(0, -1) == GROUND goto reproduce_up
+    if see(1, 1) == GROUND goto reproduce_down_right
+    if see(1, -1) == GROUND goto reproduce_up_right
+    if see(-1, 1) == GROUND goto reproduce_down_left
+    if see(-1, -1) == GROUND goto reproduce_up_left
+    goto observe
+
+reproduce_right:
+    reproduce(1, 0, 35)
+    goto start
+
+reproduce_left:
+    reproduce(-1, 0, 35)
+    goto start
+
+reproduce_down:
+    reproduce(0, 1, 35)
+    goto start
+
+reproduce_up:
+    reproduce(0, -1, 35)
+    goto start
+
+reproduce_down_right:
+    reproduce(1, 1, 35)
+    goto start
+
+reproduce_up_right:
+    reproduce(1, -1, 35)
+    goto start
+
+reproduce_down_left:
+    reproduce(-1, 1, 35)
+    goto start
+
+reproduce_up_left:
+    reproduce(-1, -1, 35)
     goto start
 
 observe:
