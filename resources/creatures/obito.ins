@@ -1,7 +1,7 @@
 # Obito - combatiente tactico y evasivo
 creature Obito
 faction akatsuki
-health 150
+health 200
 vision 6
 lifespan 175
 
@@ -9,10 +9,10 @@ start:
     if health <= 40 goto hide
     if enemies_near > 1 and health <= 70 goto evade
     if enemy_dist == 1 goto assess
+    if can_reproduce == 1 and health >= 100 goto reproduce_check
     if enemy_dist > 1 goto stalk
     if consumable_dist == 1 goto consume_resource
     if consumable_dist > 1 goto approach_resource
-    if health >= 100 goto reproduce_check
     goto observe
 
 assess:
@@ -42,47 +42,44 @@ approach_resource:
     move(consumable_dx, consumable_dy, 1)
     goto start
 
-# Obito solo se reproduce cuando no necesita esconderse ni combatir.
+# Obito intenta reproducirse cuando no está obligado a combatir o huir.
 reproduce_check:
-    if see(1, 0) == GROUND goto reproduce_right
-    if see(-1, 0) == GROUND goto reproduce_left
-    if see(0, 1) == GROUND goto reproduce_down
-    if see(0, -1) == GROUND goto reproduce_up
-    if see(1, 1) == GROUND goto reproduce_down_right
-    if see(1, -1) == GROUND goto reproduce_up_right
-    if see(-1, 1) == GROUND goto reproduce_down_left
-    if see(-1, -1) == GROUND goto reproduce_up_left
-    goto observe
-
-reproduce_right:
+    if see(x + 1, y) goto check_left
     reproduce(1, 0, 35)
     goto start
 
-reproduce_left:
+check_left:
+    if see(x - 1, y) goto check_down
     reproduce(-1, 0, 35)
     goto start
 
-reproduce_down:
+check_down:
+    if see(x, y + 1) goto check_up
     reproduce(0, 1, 35)
     goto start
 
-reproduce_up:
+check_up:
+    if see(x, y - 1) goto check_down_right
     reproduce(0, -1, 35)
     goto start
 
-reproduce_down_right:
+check_down_right:
+    if see(x + 1, y + 1) goto check_up_right
     reproduce(1, 1, 35)
     goto start
 
-reproduce_up_right:
+check_up_right:
+    if see(x + 1, y - 1) goto check_down_left
     reproduce(1, -1, 35)
     goto start
 
-reproduce_down_left:
+check_down_left:
+    if see(x - 1, y + 1) goto check_up_left
     reproduce(-1, 1, 35)
     goto start
 
-reproduce_up_left:
+check_up_left:
+    if see(x - 1, y - 1) goto observe
     reproduce(-1, -1, 35)
     goto start
 

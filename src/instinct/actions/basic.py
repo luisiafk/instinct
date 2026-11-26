@@ -350,6 +350,9 @@ class ReproduceAction(Action):
         mother = context.creature_obj
         world = context.world
 
+        if not mother.can_reproduce: 
+            return
+
         target_x = mother.x + dx
         target_y = mother.y + dy
 
@@ -375,10 +378,14 @@ class ReproduceAction(Action):
             age=0,
             program=context.program,
             max_health=mother.max_health,
+            can_reproduce=False
         )
 
-        mother.health -= child_health
         world.place_creature(child, target_x, target_y)
+
+        # La madre pierde la vida correspondiente y agota su única reproducción.
+        mother.health -= child_health
+        mother.can_reproduce = False
 
         context.publish_action_event(
             "reproduce",

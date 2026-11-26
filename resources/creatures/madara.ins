@@ -1,18 +1,18 @@
 # Madara - combatiente dominante
 creature Madara
 faction uchiha
-health 150
+health 200
 vision 5
 lifespan 200
 
 start:
     if health <= 45 goto recover
-    if enemies_near > 0 and roars_near == 0 goto declare
     if enemy_dist == 1 goto crush
+    if can_reproduce == 1 and health >= 100 goto reproduce_check
+    if enemies_near > 0 and roars_near == 0 goto declare
     if enemy_dist > 1 goto advance
     if consumable_dist == 1 goto consume_resource
     if consumable_dist > 1 goto approach_resource
-    if health >= 100 goto reproduce_check
     goto patrol
 
 declare:
@@ -45,47 +45,44 @@ approach_resource:
     move(consumable_dx, consumable_dy, 1)
     goto start
 
-# Madara aprovecha los momentos sin amenazas para expandir su población.
+# Madara aprovecha las casillas libres para expandir su población.
 reproduce_check:
-    if see(1, 0) == GROUND goto reproduce_right
-    if see(-1, 0) == GROUND goto reproduce_left
-    if see(0, 1) == GROUND goto reproduce_down
-    if see(0, -1) == GROUND goto reproduce_up
-    if see(1, 1) == GROUND goto reproduce_down_right
-    if see(1, -1) == GROUND goto reproduce_up_right
-    if see(-1, 1) == GROUND goto reproduce_down_left
-    if see(-1, -1) == GROUND goto reproduce_up_left
-    goto patrol
-
-reproduce_right:
+    if see(x + 1, y) goto check_left
     reproduce(1, 0, 35)
     goto start
 
-reproduce_left:
+check_left:
+    if see(x - 1, y) goto check_down
     reproduce(-1, 0, 35)
     goto start
 
-reproduce_down:
+check_down:
+    if see(x, y + 1) goto check_up
     reproduce(0, 1, 35)
     goto start
 
-reproduce_up:
+check_up:
+    if see(x, y - 1) goto check_down_right
     reproduce(0, -1, 35)
     goto start
 
-reproduce_down_right:
+check_down_right:
+    if see(x + 1, y + 1) goto check_up_right
     reproduce(1, 1, 35)
     goto start
 
-reproduce_up_right:
+check_up_right:
+    if see(x + 1, y - 1) goto check_down_left
     reproduce(1, -1, 35)
     goto start
 
-reproduce_down_left:
+check_down_left:
+    if see(x - 1, y + 1) goto check_up_left
     reproduce(-1, 1, 35)
     goto start
 
-reproduce_up_left:
+check_up_left:
+    if see(x - 1, y - 1) goto patrol
     reproduce(-1, -1, 35)
     goto start
 

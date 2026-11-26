@@ -28,7 +28,7 @@ class ExecutionContext:
     READ_ONLY_NAMES: ClassVar[set[str]] = {
         "GROUND", "OBJECT", "ALLY", "ENEMY", "NONE",
         "creature", "faction", "species",
-        "health", "vision", "lifespan", "age",
+        "health", "vision", "lifespan", "age", "can_reproduce",
         "orientation", "x", "y",
         "allies_near", "enemies_near", "objects_near",
         "consumables_near",
@@ -152,6 +152,7 @@ class ExecutionContext:
             "vision": creature.vision,
             "lifespan": creature.lifespan,
             "age": creature.age,
+            "can_reproduce": int(creature.can_reproduce),
             "x": creature.x,
             "y": creature.y,
             "width": self.world.width,

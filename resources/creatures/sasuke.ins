@@ -1,17 +1,17 @@
 # Sasuke - cazador selectivo
 creature Sasuke
 faction uchiha
-health 150
+health 200
 vision 6
 lifespan 150
 
 start:
     if health <= 30 goto recover
     if enemy_dist == 1 goto strike
+    if can_reproduce == 1 and health >= 100 goto reproduce_check
     if enemy_dist > 1 goto stalk
     if consumable_dist == 1 goto consume_resource
     if consumable_dist > 1 goto approach_resource
-    if health >= 100 goto reproduce_check
     goto explore
 
 strike:
@@ -40,47 +40,44 @@ approach_resource:
     move(consumable_dx, consumable_dy, 1)
     goto start
 
-# Sasuke evita reproducirse mientras tenga amenazas o recursos cercanos.
+# Sasuke busca una posición libre antes de crear a su descendiente.
 reproduce_check:
-    if see(1, 0) == GROUND goto reproduce_right
-    if see(-1, 0) == GROUND goto reproduce_left
-    if see(0, 1) == GROUND goto reproduce_down
-    if see(0, -1) == GROUND goto reproduce_up
-    if see(1, 1) == GROUND goto reproduce_down_right
-    if see(1, -1) == GROUND goto reproduce_up_right
-    if see(-1, 1) == GROUND goto reproduce_down_left
-    if see(-1, -1) == GROUND goto reproduce_up_left
-    goto explore
-
-reproduce_right:
+    if see(x + 1, y) goto check_left
     reproduce(1, 0, 35)
     goto start
 
-reproduce_left:
+check_left:
+    if see(x - 1, y) goto check_down
     reproduce(-1, 0, 35)
     goto start
 
-reproduce_down:
+check_down:
+    if see(x, y + 1) goto check_up
     reproduce(0, 1, 35)
     goto start
 
-reproduce_up:
+check_up:
+    if see(x, y - 1) goto check_down_right
     reproduce(0, -1, 35)
     goto start
 
-reproduce_down_right:
+check_down_right:
+    if see(x + 1, y + 1) goto check_up_right
     reproduce(1, 1, 35)
     goto start
 
-reproduce_up_right:
+check_up_right:
+    if see(x + 1, y - 1) goto check_down_left
     reproduce(1, -1, 35)
     goto start
 
-reproduce_down_left:
+check_down_left:
+    if see(x - 1, y + 1) goto check_up_left
     reproduce(-1, 1, 35)
     goto start
 
-reproduce_up_left:
+check_up_left:
+    if see(x - 1, y - 1) goto explore
     reproduce(-1, -1, 35)
     goto start
 
