@@ -73,7 +73,7 @@ class Selection:
 
         return self.selected_tile
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, animation_controller):
         """Dibuja los indicadores visuales de selección."""
 
         previous_clip = screen.get_clip()
@@ -91,10 +91,15 @@ class Selection:
                 max(1, round(camera.zoom)),
             )
 
-        # Resaltar las criaturas seleccionadas.
+        # El indicador debe acompañar el desplazamiento visual
+        # de cada criatura, no quedarse en su casilla lógica.
         for creature in self.selected_creatures:
-            center_x = (creature.x + 0.5) * camera.tile_size
-            center_y = (creature.y + 0.5) * camera.tile_size
+            visual_x, visual_y = (
+                animation_controller.get_visual_position(creature)
+            )
+
+            center_x = (visual_x + 0.5) * camera.tile_size
+            center_y = (visual_y + 0.5) * camera.tile_size
 
             screen_x, screen_y = camera.world_to_screen(
                 center_x,

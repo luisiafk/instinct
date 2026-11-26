@@ -264,13 +264,45 @@ class TileInfoPanel:
             y += 25
 
     def _draw_empty(self, screen, rect, colors):
-        text = self.info_font.render(
-            "Selecciona una casilla u objeto.",
-            True,
-            colors["secondary_text"],
-        )
+        text = "Selecciona una casilla u objeto."
 
-        screen.blit(
-            text,
-            text.get_rect(center=rect.center),
-        )
+        max_width = rect.width - 32
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        # Ajustamos el mensaje al ancho interior del panel.
+        for word in words:
+            candidate = f"{current_line} {word}".strip()
+
+            if self.info_font.size(candidate)[0] <= max_width:
+                current_line = candidate
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+
+        if current_line:
+            lines.append(current_line)
+
+        line_height = self.info_font.get_linesize() + 4
+        total_height = len(lines) * line_height
+
+        # Centramos el bloque completo, no cada línea por separado.
+        y = rect.centery - total_height // 2
+
+        for line in lines:
+            rendered = self.info_font.render(
+                line,
+                True,
+                colors["secondary_text"],
+            )
+
+            screen.blit(
+                rendered,
+                rendered.get_rect(
+                    center=(rect.centerx, y + line_height // 2)
+                ),
+            )
+
+            y += line_height

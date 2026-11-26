@@ -238,6 +238,51 @@ def test_consume_publishes_event_and_heals_actor(simulation_context):
     assert events[0].actor_ref is actor
     assert events[1].target_ref is target
 
+def test_consume_cannot_exceed_maximum_health(simulation_context):
+    data = simulation_context
+    actor = data["creature"]
+
+    actor.health = 90
+
+    target = Creature(
+        name="Enemy",
+        faction="Enemy",
+        health=50,
+        vision=5,
+        lifespan=500,
+    )
+    data["world"].place_creature(target, 2, 1)
+
+    ConsumeAction().execute(
+        data["context"],
+        [1, 0, 10, 22],
+    )
+
+    assert actor.health == 100
+
+
+def test_consume_preserves_health_below_maximum(simulation_context):
+    data = simulation_context
+    actor = data["creature"]
+
+    actor.health = 40
+
+    target = Creature(
+        name="Enemy",
+        faction="Enemy",
+        health=50,
+        vision=5,
+        lifespan=500,
+    )
+    data["world"].place_creature(target, 2, 1)
+
+    ConsumeAction().execute(
+        data["context"],
+        [1, 0, 10, 15],
+    )
+
+    assert actor.health == 55
+
 
 def test_reproduce_publishes_event_and_creates_child(simulation_context):
     data = simulation_context

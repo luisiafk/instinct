@@ -47,9 +47,11 @@ class SimulationScene(BaseScene):
 
         self.asset_loader = AssetLoader()
 
+       # Dejamos el mundo sin bordes entre las casillas.
+        # La cuadrícula se puede recuperar pulsando G durante la simulación.
         self.world_renderer = WorldRenderer(
             asset_loader=self.asset_loader,
-            show_grid=True,
+            show_grid=False,
         )
 
         self.animation_controller = AnimationController()
@@ -465,9 +467,18 @@ class SimulationScene(BaseScene):
         if self.controller is not None:
             self.controller.update(delta_time)
 
+        # Recogemos los acontecimientos aunque la simulación esté pausada.
+        # Así no perdemos los eventos producidos por un avance manual.
         self._process_action_events()
 
-        self.creature_renderer.update(delta_time)
+        # Las animaciones solo avanzan mientras la simulación está activa.
+        # Si terminó naturalmente, dejamos finalizar las animaciones pendientes.
+        if (
+            self.controller is None
+            or not self.controller.paused
+            or self.controller.finished
+        ):
+            self.creature_renderer.update(delta_time)
 
         self._update_camera_follow()
 
@@ -475,7 +486,6 @@ class SimulationScene(BaseScene):
             self.event_panel.set_events(
                 self.simulation.event_log.events
             )
-
     def draw(self, screen):
 
         colors = self.theme_manager.colors
@@ -491,9 +501,12 @@ class SimulationScene(BaseScene):
         self.world_renderer.draw(screen)
         self._draw_creatures(screen)
 
+        # La selección utiliza la misma posición visual
+        # que el renderizador de criaturas.
         self.selection.draw(
             screen,
             self.camera,
+            self.animation_controller,
         )
 
         self._draw_interface(screen)

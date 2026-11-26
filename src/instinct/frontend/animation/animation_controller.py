@@ -104,7 +104,7 @@ class AnimationController:
         duration = duration_per_tile * distance
 
         record.movement_queue.append(
-            (start, end, duration)
+            (start, end, duration, state)
         )
 
         if record.visual_position is None:
@@ -144,7 +144,7 @@ class AnimationController:
         remaining_ms = delta_ms
 
         while record.movement_queue and remaining_ms > 0:
-            start, end, duration = record.movement_queue[0]
+            start, end, duration, _ = record.movement_queue[0]
 
             available_ms = duration - record.movement_elapsed_ms
             consumed_ms = min(remaining_ms, available_ms)
@@ -222,7 +222,24 @@ class AnimationController:
                     record.frame_index = definition.frame_count - 1
                     record.finished = True
                 else:
-                    record.state_machine.finish_animation()
+                    # Si termina el daño y todavía hay un desplazamiento
+                    # pendiente, recuperamos su estado visual.
+                    if (
+                        state is AnimationState.HURT
+                        and record.movement_queue
+                    ):
+                        movement_state = (
+                            record.movement_queue[0][3]
+                        )
+
+                        self.set_state(
+                            record.creature,
+                            movement_state,
+                            force=True,
+                        )
+                    else:
+                        record.state_machine.finish_animation()
+
                     record.frame_index = 0
                     record.elapsed_ms = 0.0
 
