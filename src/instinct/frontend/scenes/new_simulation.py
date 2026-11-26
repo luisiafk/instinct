@@ -34,6 +34,8 @@ class NewSimulationScene(BaseScene):
         # Cantidad inicial de cada especie.
         self.creature_counts = {}
 
+        self.creature_scroll = 0
+
         self.error_message = None
 
         self.title_font = pygame.font.Font(None, 58)
@@ -135,6 +137,8 @@ class NewSimulationScene(BaseScene):
         )
 
     def handle_event(self, event):
+        layout = self._get_layout()
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._return_to_menu()
@@ -146,31 +150,44 @@ class NewSimulationScene(BaseScene):
             elif event.key == pygame.K_RIGHT:
                 self._change_map(1)
 
+        if event.type == pygame.MOUSEWHEEL:
+            if layout["viewport"].collidepoint(pygame.mouse.get_pos()):
+                self.creature_scroll -= (
+                    event.y * layout["row_height"] * 2
+                )
+
+                self.creature_scroll = max(
+                    0,
+                    min(self.creature_scroll, layout["max_scroll"]),
+                )
+
+            return
+
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
             return
 
-        width, height = self.game.screen.get_size()
+        width = layout["width"]
+        scaled = layout["scaled"]
 
-        # Selector de mapa.
         map_rect = pygame.Rect(
-            width // 2 - 230,
-            245,
-            460,
-            58,
+            width // 2 - scaled(230),
+            scaled(245),
+            scaled(460),
+            scaled(58),
         )
 
         previous_rect = pygame.Rect(
-            map_rect.left - 65,
+            map_rect.left - scaled(65),
             map_rect.y,
-            52,
-            58,
+            scaled(52),
+            scaled(58),
         )
 
         next_rect = pygame.Rect(
-            map_rect.right + 13,
+            map_rect.right + scaled(13),
             map_rect.y,
-            52,
-            58,
+            scaled(52),
+            scaled(58),
         )
 
         if previous_rect.collidepoint(event.pos):
@@ -181,50 +198,46 @@ class NewSimulationScene(BaseScene):
             self._change_map(1)
             return
 
-        # Controles de cantidad de criaturas.
-        names = list(self.creature_counts.keys())
+        if layout["viewport"].collidepoint(event.pos):
+            names = list(self.creature_counts.keys())
 
-        row_height = 76
-        start_y = 435
+            for index, name in enumerate(names):
+                row_y = self._get_creature_row_y(index, layout)
 
-        for index, name in enumerate(names):
-            row_y = start_y + index * row_height
+                minus_rect = pygame.Rect(
+                    width // 2 + scaled(185),
+                    row_y + scaled(12),
+                    scaled(42),
+                    scaled(42),
+                )
 
-            minus_rect = pygame.Rect(
-                width // 2 + 185,
-                row_y + 12,
-                42,
-                42,
-            )
+                plus_rect = pygame.Rect(
+                    width // 2 + scaled(285),
+                    row_y + scaled(12),
+                    scaled(42),
+                    scaled(42),
+                )
 
-            plus_rect = pygame.Rect(
-                width // 2 + 285,
-                row_y + 12,
-                42,
-                42,
-            )
+                if minus_rect.collidepoint(event.pos):
+                    self._change_creature_count(name, -1)
+                    return
 
-            if minus_rect.collidepoint(event.pos):
-                self._change_creature_count(name, -1)
-                return
+                if plus_rect.collidepoint(event.pos):
+                    self._change_creature_count(name, 1)
+                    return
 
-            if plus_rect.collidepoint(event.pos):
-                self._change_creature_count(name, 1)
-                return
-
-        # Botones inferiores.
         back_rect = pygame.Rect(
-            width // 2 - 245,
-            height - 105,
-            210,
-            58,
+            width // 2 - scaled(245),
+            layout["button_y"],
+            scaled(210),
+            layout["button_height"],
         )
 
         start_rect = pygame.Rect(
-            width // 2 + 35,
-            height - 105,
-            210,
-            58,
+            width // 2 + scaled(35),
+            layout["button_y"],
+            scaled(210),
+            layout["button_height"],
         )
 
         if back_rect.collidepoint(event.pos):
@@ -233,6 +246,7 @@ class NewSimulationScene(BaseScene):
         elif start_rect.collidepoint(event.pos):
             self._start_simulation()
 
+    
     def _draw_text(
         self,
         surface,
@@ -293,36 +307,38 @@ class NewSimulationScene(BaseScene):
         )
 
     def _draw_map_selector(self, screen):
-        width = screen.get_width()
+        layout = self._get_layout()
+        width = layout["width"]
+        scaled = layout["scaled"]
 
         self._draw_text(
             screen,
             "SELECCIONA EL MAPA",
             self.section_font,
             self.GOLD,
-            (width // 2, 205),
+            (width // 2, scaled(205)),
             center=True,
         )
 
         map_rect = pygame.Rect(
-            width // 2 - 230,
-            245,
-            460,
-            58,
+            width // 2 - scaled(230),
+            scaled(245),
+            scaled(460),
+            scaled(58),
         )
 
         previous_rect = pygame.Rect(
-            map_rect.left - 65,
+            map_rect.left - scaled(65),
             map_rect.y,
-            52,
-            58,
+            scaled(52),
+            scaled(58),
         )
 
         next_rect = pygame.Rect(
-            map_rect.right + 13,
+            map_rect.right + scaled(13),
             map_rect.y,
-            52,
-            58,
+            scaled(52),
+            scaled(58),
         )
 
         self._draw_button(
@@ -349,45 +365,50 @@ class NewSimulationScene(BaseScene):
         if self.selected_map:
             world = self.resource_manager.get_map(self.selected_map)
 
-            description = (
-                f"Dimensiones: {world.width} × {world.height}"
-            )
+            description = f"Dimensiones: {world.width} × {world.height}"
 
             self._draw_text(
                 screen,
                 description,
                 self.small_font,
                 self.MUTED,
-                (width // 2, 322),
+                (width // 2, scaled(322)),
                 center=True,
             )
-
+    
     def _draw_creature_selector(self, screen):
-        width = screen.get_width()
+        layout = self._get_layout()
+
+        width = layout["width"]
+        scaled = layout["scaled"]
+        viewport = layout["viewport"]
 
         self._draw_text(
             screen,
             "POBLACIÓN INICIAL",
             self.section_font,
             self.GOLD,
-            (width // 2, 390),
+            (width // 2, scaled(390)),
             center=True,
         )
 
         names = list(self.creature_counts.keys())
 
-        row_height = 76
-        start_y = 435
+        previous_clip = screen.get_clip()
+        screen.set_clip(viewport)
 
         for index, name in enumerate(names):
-            row_y = start_y + index * row_height
+            row_y = self._get_creature_row_y(index, layout)
 
             row_rect = pygame.Rect(
-                width // 2 - 350,
+                width // 2 - scaled(350),
                 row_y,
-                700,
-                66,
+                scaled(700),
+                scaled(66),
             )
+
+            if not viewport.colliderect(row_rect):
+                continue
 
             pygame.draw.rect(
                 screen,
@@ -405,24 +426,22 @@ class NewSimulationScene(BaseScene):
             )
 
             count = self.creature_counts[name]
-            enabled = count > 0
 
             self._draw_text(
                 screen,
                 name,
                 self.text_font,
-                self.TEXT if enabled else self.MUTED,
-                (row_rect.x + 22, row_rect.centery),
-                center=False,
+                self.TEXT if count > 0 else self.MUTED,
+                (row_rect.x + scaled(22), row_rect.centery),
             )
 
             self._draw_button(
                 screen,
                 pygame.Rect(
-                    width // 2 + 185,
-                    row_y + 12,
-                    42,
-                    42,
+                    width // 2 + scaled(185),
+                    row_y + scaled(12),
+                    scaled(42),
+                    scaled(42),
                 ),
                 "-",
                 enabled=count > 0,
@@ -432,22 +451,24 @@ class NewSimulationScene(BaseScene):
                 screen,
                 count,
                 self.text_font,
-                self.GOLD if enabled else self.MUTED,
-                (width // 2 + 256, row_rect.centery),
+                self.GOLD if count > 0 else self.MUTED,
+                (width // 2 + scaled(256), row_rect.centery),
                 center=True,
             )
 
             self._draw_button(
                 screen,
                 pygame.Rect(
-                    width // 2 + 285,
-                    row_y + 12,
-                    42,
-                    42,
+                    width // 2 + scaled(285),
+                    row_y + scaled(12),
+                    scaled(42),
+                    scaled(42),
                 ),
                 "+",
                 enabled=count < self.MAX_CREATURES,
             )
+
+        screen.set_clip(previous_clip)
 
         total = sum(self.creature_counts.values())
 
@@ -456,7 +477,7 @@ class NewSimulationScene(BaseScene):
             f"Total de criaturas: {total}",
             self.subtitle_font,
             self.MUTED,
-            (width // 2, start_y + len(names) * row_height + 8),
+            (width // 2, layout["button_y"] - scaled(28)),
             center=True,
         )
 
@@ -466,11 +487,14 @@ class NewSimulationScene(BaseScene):
         width, height = screen.get_size()
 
         # Panel principal.
+        layout = self._get_layout()
+        scaled = layout["scaled"]
+
         panel_rect = pygame.Rect(
-            width // 2 - 460,
-            35,
-            920,
-            height - 70,
+            width // 2 - scaled(460),
+            scaled(35),
+            scaled(920),
+            height - scaled(70),
         )
 
         pygame.draw.rect(
@@ -493,7 +517,7 @@ class NewSimulationScene(BaseScene):
             "NUEVA SIMULACIÓN",
             self.title_font,
             self.GOLD,
-            (width // 2, 105),
+            (width // 2, scaled(105)),
             center=True,
         )
 
@@ -502,7 +526,7 @@ class NewSimulationScene(BaseScene):
             "Configura el mundo y la población inicial",
             self.subtitle_font,
             self.MUTED,
-            (width // 2, 155),
+            (width // 2, scaled(155)),
             center=True,
         )
 
@@ -515,22 +539,22 @@ class NewSimulationScene(BaseScene):
                 self.error_message,
                 self.small_font,
                 (230, 105, 105),
-                (width // 2, height - 145),
+                (width // 2, height - scaled(145)),
                 center=True,
             )
 
         back_rect = pygame.Rect(
-            width // 2 - 245,
-            height - 105,
-            210,
-            58,
+            width // 2 - scaled(245),
+            layout["button_y"],
+            scaled(210),
+            layout["button_height"],
         )
 
         start_rect = pygame.Rect(
-            width // 2 + 35,
-            height - 105,
-            210,
-            58,
+            width // 2 + scaled(35),
+            layout["button_y"],
+            scaled(210),
+            layout["button_height"],
         )
 
         self._draw_button(
@@ -550,4 +574,57 @@ class NewSimulationScene(BaseScene):
             "Iniciar",
             enabled=can_start,
             accent=True,
+        )
+
+    def _get_layout(self):
+        width, height = self.game.screen.get_size()
+
+        scale = min(width / 1920, height / 1080)
+        scale = max(0.55, min(scale, 1.0))
+
+        def scaled(value):
+            return max(1, round(value * scale))
+
+        button_y = height - scaled(105)
+        button_height = scaled(58)
+
+        row_start = scaled(435)
+        row_height = scaled(76)
+
+        viewport_bottom = button_y - scaled(100)
+
+        viewport = pygame.Rect(
+            width // 2 - scaled(350),
+            row_start,
+            scaled(700),
+            max(0, viewport_bottom - row_start),
+        )
+
+        content_height = len(self.creature_counts) * row_height
+        max_scroll = max(0, content_height - viewport.height)
+
+        self.creature_scroll = max(
+            0,
+            min(self.creature_scroll, max_scroll),
+        )
+
+        return {
+            "width": width,
+            "height": height,
+            "scale": scale,
+            "scaled": scaled,
+            "button_y": button_y,
+            "button_height": button_height,
+            "row_start": row_start,
+            "row_height": row_height,
+            "viewport": viewport,
+            "max_scroll": max_scroll,
+        }
+
+
+    def _get_creature_row_y(self, index, layout):
+        return (
+            layout["row_start"]
+            + index * layout["row_height"]
+            - self.creature_scroll
         )

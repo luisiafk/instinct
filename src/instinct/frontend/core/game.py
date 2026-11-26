@@ -21,7 +21,21 @@ class Game:
     def __init__(self):
         pygame.init()
 
-        self.windowed_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        desktop_sizes = pygame.display.get_desktop_sizes()
+
+        if desktop_sizes:
+            desktop_width, desktop_height = desktop_sizes[0]
+
+            if desktop_width > 0 and desktop_height > 0:
+                self.windowed_size = (
+                    min(WINDOW_WIDTH, int(desktop_width * 0.90)),
+                    min(WINDOW_HEIGHT, int(desktop_height * 0.88)),
+                )
+            else:
+                self.windowed_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        else:
+            self.windowed_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+
         self.fullscreen = FULLSCREEN
 
         if self.fullscreen:
@@ -46,47 +60,6 @@ class Game:
         self.window_manager = WindowManager(self)
 
         self.scene_manager = SceneManager(self)
-
-    def set_fullscreen(self, enabled):
-        """Activa o desactiva la pantalla completa."""
-
-        enabled = bool(enabled)
-
-        if enabled == self.fullscreen:
-            return
-
-        if enabled:
-            self.windowed_size = self.screen.get_size()
-
-            self.screen = pygame.display.set_mode(
-                (0, 0),
-                pygame.FULLSCREEN,
-            )
-        else:
-            flags = pygame.RESIZABLE if RESIZABLE else 0
-
-            self.screen = pygame.display.set_mode(
-                self.windowed_size,
-                flags,
-            )
-
-        self.fullscreen = enabled
-
-    def set_windowed_resolution(self, width, height):
-        """Cambia la resolución del modo ventana."""
-
-        if width <= 0 or height <= 0:
-            return
-
-        self.windowed_size = (int(width), int(height))
-
-        if not self.fullscreen:
-            flags = pygame.RESIZABLE if RESIZABLE else 0
-
-            self.screen = pygame.display.set_mode(
-                self.windowed_size,
-                flags,
-            )
 
     def run(self):
         """Ejecuta el bucle principal."""
@@ -114,7 +87,51 @@ class Game:
 
         pygame.quit()
 
+    def set_windowed_resolution(self, width, height):
+        """Cambia la resolución del modo ventana."""
+
+        if width <= 0 or height <= 0 or self.fullscreen:
+            return
+
+        self.windowed_size = (int(width), int(height))
+
+        flags = pygame.RESIZABLE if RESIZABLE else 0
+
+        window_position = pygame.display.get_window_position()
+
+        self.screen = pygame.display.set_mode(
+            self.windowed_size,
+            flags,
+        )
+
+        pygame.display.set_window_position(window_position)
     def quit(self):
         """Solicita el cierre de la aplicación."""
 
         self.running = False
+
+
+    def set_fullscreen(self, enabled):
+        """Activa o desactiva la pantalla completa."""
+
+        enabled = bool(enabled)
+
+        if enabled == self.fullscreen:
+            return
+
+        if enabled:
+            self.windowed_size = self.screen.get_size()
+
+            self.screen = pygame.display.set_mode(
+                (0, 0),
+                pygame.FULLSCREEN,
+            )
+        else:
+            flags = pygame.RESIZABLE if RESIZABLE else 0
+
+            self.screen = pygame.display.set_mode(
+                self.windowed_size,
+                flags,
+            )
+
+        self.fullscreen = enabled

@@ -83,12 +83,16 @@ class EventAdapter:
             return
 
         if event_type == "death":
+            # En combate muere el objetivo; por causas naturales, el actor.
+            deceased = target if target is not None else actor
+
             self._set(
-                target,
+                deceased,
                 AnimationState.DEATH,
                 force=True,
             )
             return
+           
 
         if event_type == "consume":
             self._set(actor, AnimationState.CONSUME)

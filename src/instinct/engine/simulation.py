@@ -179,8 +179,8 @@ class Simulation:
             world=self.world,
             tick=self.tick,
             event_log=self.event_log,
+            action_event_log=self.action_event_log,  # También registramos los eventos de acciones
         )
-
         self._cleanup_contexts()
 
     def run(

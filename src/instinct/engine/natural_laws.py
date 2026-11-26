@@ -11,7 +11,7 @@ Se aplican al finalizar cada tick de la simulación:
 
 from instinct.engine.event_log import EventLog
 from instinct.world.world_grid import WorldGrid
-
+from instinct.engine.action_event import ActionEventLog
 
 class NaturalLaws:
     """Aplica las leyes naturales al mundo de la simulación."""
@@ -21,17 +21,15 @@ class NaturalLaws:
         world: WorldGrid,
         tick: int,
         event_log: EventLog,
+        action_event_log: ActionEventLog,
     ) -> None:
-        """
-        Aplica todas las leyes naturales al finalizar un tick.
-
-        Primero regenera los terrenos y después actualiza
-        la vida y la edad de las criaturas.
-        """
-
         NaturalLaws._regenerate_terrains(world)
-
-        NaturalLaws._update_creatures(world, tick, event_log)
+        NaturalLaws._update_creatures(
+            world,
+            tick,
+            event_log,
+            action_event_log,
+        )
 
     @staticmethod
     def _regenerate_terrains(world: WorldGrid) -> None:
@@ -53,8 +51,8 @@ class NaturalLaws:
         world: WorldGrid,
         tick: int,
         event_log: EventLog,
+        action_event_log: ActionEventLog,
     ) -> None:
-        """Actualiza la vida y la edad de todas las criaturas."""
 
         for y in range(world.height):
             for x in range(world.width):
