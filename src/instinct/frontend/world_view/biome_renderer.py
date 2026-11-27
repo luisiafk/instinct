@@ -66,68 +66,90 @@ class BiomeRenderer:
             )
 
     def draw_shore(self, screen, world, x, y, rect):
-        """Dibuja la transición del agua hacia los terrenos vecinos."""
+        """Dibuja una franja de orilla dentro de los límites del agua."""
+
+        # Cada dirección indica dónde está la tierra y qué sprite
+        # contiene la transición correcta entre tierra y agua.
+        neighbors = {
+            "north": ((x, y - 1), "shore_south_edge"),
+            "south": ((x, y + 1), "shore_north_edge"),
+            "east": ((x + 1, y), "shore_east_edge"),
+            "west": ((x - 1, y), "shore_west_edge"),
+        }
 
         if self.asset_loader is None:
             return
 
-        # Buscamos las casillas de tierra que rodean esta casilla de agua.
-        neighbors = {
-            "north": (x, y - 1),
-            "south": (x, y + 1),
-            "east": (x + 1, y),
-            "west": (x - 1, y),
-        }
+        # La franja ocupa aproximadamente una quinta parte del tile.
+        # Así conserva el detalle de la orilla sin tapar demasiado agua.
+        band_size = max(2, min(rect.width, rect.height) // 5)
 
-        land_neighbors = []
+        for direction, (position, sprite_name) in neighbors.items():
+            nx, ny = position
 
-        for direction, (nx, ny) in neighbors.items():
             if not world.in_bounds(nx, ny):
                 continue
 
             neighbor = world.get_tile(nx, ny)
 
+            # Solo necesitamos una transición cuando al otro lado hay tierra.
             if (
-                neighbor is not None
-                and neighbor.terrain.name.lower() != "water"
+                neighbor is None
+                or neighbor.terrain.name.lower() == "water"
             ):
-                land_neighbors.append(direction)
+                continue
 
-        # Por ahora aplicamos una pieza recta solo cuando hay un único
-        # lado de tierra. Así evitamos superponer transiciones incompatibles.
-        if len(land_neighbors) != 1:
-            return
+            cache_key = (sprite_name, rect.size, direction)
 
-        # El nombre indica hacia dónde queda orientada la parte de agua.
-        sprite_names = {
-            "north": "shore_north_edge",
-            "south": "shore_south_edge",
-            "east": "shore_east_edge",
-            "west": "shore_west_edge",
-        }
+            if cache_key not in self.shore_images:
+                image = self.asset_loader.load_image(
+                    f"biomes/{sprite_name}.png"
+                )
 
-        # La orilla se encuentra en el lado contrario al terreno vecino.
-        opposite = {
-            "north": "south",
-            "south": "north",
-            "east": "west",
-            "west": "east",
-        }
+                if image is None:
+                    continue
 
-        sprite_name = sprite_names[opposite[land_neighbors[0]]]
-        cache_key = (sprite_name, rect.size)
+                # Adaptamos el sprite al tamaño actual de la casilla.
+                if image.get_size() != rect.size:
+                    image = pygame.transform.scale(image, rect.size)
 
-        if cache_key not in self.shore_images:
-            image = self.asset_loader.load_image(
-                f"biomes/{sprite_name}.png"
-            )
+                # Recortamos solo la parte central, donde está dibujada
+                # la transición irregular entre el agua y la tierra.
+                if direction in ("north", "south"):
+                    source_rect = pygame.Rect(
+                        0,
+                        (rect.height - band_size) // 2,
+                        rect.width,
+                        band_size,
+                    )
+                else:
+                    source_rect = pygame.Rect(
+                        (rect.width - band_size) // 2,
+                        0,
+                        band_size,
+                        rect.height,
+                    )
 
-            if image is None:
-                return
+                self.shore_images[cache_key] = (
+                    image.subsurface(source_rect).copy()
+                )
 
-            if image.get_size() != rect.size:
-                image = pygame.transform.scale(image, rect.size)
+            shore = self.shore_images[cache_key]
 
-            self.shore_images[cache_key] = image
+            # Colocamos la franja justo en el borde que toca la tierra.
+            if direction == "north":
+                destination = (rect.left, rect.top)
+            elif direction == "south":
+                destination = (
+                    rect.left,
+                    rect.bottom - band_size,
+                )
+            elif direction == "east":
+                destination = (
+                    rect.right - band_size,
+                    rect.top,
+                )
+            else:
+                destination = (rect.left, rect.top)
 
-        screen.blit(self.shore_images[cache_key], rect)
+            screen.blit(shore, destination)
