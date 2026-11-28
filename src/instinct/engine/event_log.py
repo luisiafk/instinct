@@ -1,4 +1,3 @@
-
 """
 Registro de acontecimientos de la simulación de Instinct.
 

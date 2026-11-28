@@ -5,9 +5,9 @@ from instinct.frontend.menu.background_renderer import BackgroundRenderer
 from instinct.frontend.menu.logo_renderer import LogoRenderer
 from instinct.frontend.menu.particle_system import ParticleSystem
 from instinct.frontend.scenes.base_scene import BaseScene
-from instinct.frontend.scenes.simulation_scene import SimulationScene
 from instinct.frontend.scenes.new_simulation import NewSimulationScene
 from instinct.frontend.scenes.settings_scene import SettingsScene
+
 
 class MenuButton:
     """Botón sencillo para el menú principal."""

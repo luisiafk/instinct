@@ -1,9 +1,10 @@
 import pygame
 
 from instinct.frontend.world_view.biome_renderer import BiomeRenderer
+from instinct.frontend.world_view.building_renderer import BuildingRenderer
 from instinct.frontend.world_view.grid_renderer import GridRenderer
 from instinct.frontend.world_view.object_renderer import ObjectRenderer
-from instinct.frontend.world_view.building_renderer import BuildingRenderer
+
 
 class WorldRenderer:
     """Coordina la representación visual del mundo."""

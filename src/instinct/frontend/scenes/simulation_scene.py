@@ -1,36 +1,30 @@
-from pathlib import Path
-from copy import deepcopy
 import random
+from copy import deepcopy
+from pathlib import Path
 
 import pygame
 
-from instinct.frontend.scenes.base_scene import BaseScene
-from instinct.frontend.settings import DEFAULT_TILE_SIZE
-
-from instinct.loaders.resource_manager import ResourceManager
 from instinct.engine.simulation import Simulation
-
+from instinct.frontend.adapters.event_adapter import EventAdapter
+from instinct.frontend.animation.animation_controller import AnimationController
 from instinct.frontend.core.simulation_controller import (
     SimulationController,
 )
-
-from instinct.frontend.menu.asset_loader import AssetLoader
-
-from instinct.frontend.world_view.camera import Camera
-from instinct.frontend.world_view.world_renderer import WorldRenderer
-from instinct.frontend.world_view.creature_renderer import CreatureRenderer
-from instinct.frontend.animation.animation_controller import AnimationController
-from instinct.frontend.adapters.event_adapter import EventAdapter
-from instinct.frontend.world_view.selection import Selection
-
-from instinct.frontend.interface.top_bar import TopBar
 from instinct.frontend.interface.creature_panel import CreaturePanel
 from instinct.frontend.interface.event_panel import EventPanel
 from instinct.frontend.interface.simulation_controls import SimulationControls
 from instinct.frontend.interface.tile_info_panel import TileInfoPanel
-
-from instinct.frontend.windows.base_window import BaseWindow
+from instinct.frontend.interface.top_bar import TopBar
+from instinct.frontend.menu.asset_loader import AssetLoader
+from instinct.frontend.scenes.base_scene import BaseScene
+from instinct.frontend.settings import DEFAULT_TILE_SIZE
 from instinct.frontend.windows.code_windows import CodeWindows
+from instinct.frontend.world_view.camera import Camera
+from instinct.frontend.world_view.creature_renderer import CreatureRenderer
+from instinct.frontend.world_view.selection import Selection
+from instinct.frontend.world_view.world_renderer import WorldRenderer
+from instinct.loaders.resource_manager import ResourceManager
+
 
 class SimulationScene(BaseScene):
     """Escena principal de visualización y control del mundo."""

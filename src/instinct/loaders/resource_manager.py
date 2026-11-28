@@ -1,11 +1,11 @@
 from pathlib import Path
 
+from instinct.loaders.building_loader import BuildingLoader
 from instinct.loaders.creature_loader import CreatureLoader
 from instinct.loaders.map_loader import MapLoader
 from instinct.loaders.object_loader import ObjectLoader
 from instinct.loaders.terrain_loader import TerrainLoader
-from instinct.loaders.building_loader import BuildingLoader
-from instinct.world.entities import Creature, Terrain, WorldObject, Building
+from instinct.world.entities import Building, Creature, Terrain, WorldObject
 from instinct.world.world_grid import WorldGrid
 
 

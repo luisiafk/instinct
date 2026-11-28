@@ -1,8 +1,8 @@
 
 import pygame
 
-from instinct.frontend.scenes.base_scene import BaseScene
 from instinct.frontend.interface.widgets.button import Button
+from instinct.frontend.scenes.base_scene import BaseScene
 
 
 class SettingsScene(BaseScene):

@@ -3,7 +3,6 @@ import pygame
 
 from instinct.frontend.core.scene_manager import SceneManager
 from instinct.frontend.interface.theme_manager import ThemeManager
-from instinct.frontend.windows.window_manager import WindowManager
 from instinct.frontend.settings import (
     DEFAULT_THEME,
     FULLSCREEN,
@@ -13,6 +12,7 @@ from instinct.frontend.settings import (
     WINDOW_TITLE,
     WINDOW_WIDTH,
 )
+from instinct.frontend.windows.window_manager import WindowManager
 
 
 class Game:

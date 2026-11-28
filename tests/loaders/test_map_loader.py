@@ -3,7 +3,6 @@ import pytest
 
 from instinct.loaders.map_loader import MapLoader
 from instinct.world.entities import Building, Terrain
-from instinct.world.world_grid import WorldGrid
 
 
 @pytest.fixture
